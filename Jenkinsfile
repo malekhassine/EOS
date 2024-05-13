@@ -3,6 +3,11 @@ def microservices = ['ecomm-cart']
 
 pipeline {
     agent any
+    tools {
+    maven 'maven'
+    
+}
+
 
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
@@ -10,34 +15,21 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+       stage('Git checkout Stage') {
             steps {
-                // Checkout the repository from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
-                    userRemoteConfigs: [[url: 'https://github.com/malekhassine/EOS.git']]
-                ])
+                git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
             }
         }
+
 
       
 
-        stage('Build') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Build each microservice using Maven
-                    for (def service in microservices) {
-                        dir(service) {
-                            sh 'mvn clean install'
-                        }
-                    }
-                }
-            }
+         stage('Projets Build Stage') {
+        steps {
+            sh 'mvn clean install -DskipTests'
         }
+    }
+
 
         stage('Unit Test') {
             when {
