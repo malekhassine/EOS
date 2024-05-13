@@ -21,24 +21,6 @@ pipeline {
             }
         }
 
-        stage('Check Git Secrets') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Check each microservice for secrets
-                    for (def service in microservices) {
-                        dir(service) {
-                            // Run TruffleHog to check for secrets in the repository
-                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
-                            sh 'cat trufflehog.json' // Output the results
-                        }
-                    }
-                }
-            }
-        }
-
       
 
         stage('Build') {
