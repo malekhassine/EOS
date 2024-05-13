@@ -61,9 +61,7 @@ pipeline {
         }
 
         stage('Docker Build') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
+            
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
@@ -83,9 +81,7 @@ pipeline {
         }
 
         stage('Trivy Image Scan') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
+           
             steps {
                 script {
                     // Scan each Docker image for vulnerabilities using Trivy
