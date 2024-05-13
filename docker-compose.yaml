@@ -1,0 +1,133 @@
+version: "3.8"
+
+services:
+  db:
+    build:
+      context: ./ecomm-db
+      dockerfile: Dockerfile
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-ecomm-data:/var/lib/postgresql/data
+      - ./ecomm-db/ecomm.sql:/docker-entrypoint-initdb.d/ecomm.sql
+    env_file:
+      - .env
+    restart: unless-stopped
+
+  gateway:
+    depends_on:
+      - db
+    build:
+      context: ./ecomm-gateway
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8091:8091"
+    env_file:
+      - .env
+
+  user:
+    build:
+      context: ./ecomm-web
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8099:8080"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  cart:
+    build:
+      context: ./ecomm-cart
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8082:8082"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  product:
+    build:
+      context: ./ecomm-product
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8081:8081"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  order:
+    build:
+      context: ./ecomm-order
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8083:8083"
+    env_file:
+      - .env
+    depends_on:
+      - db
+
+  elasticsearch:
+    image: elasticsearch:8.11.1
+    container_name: es-container
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+      - "9300:9300"
+    environment:
+      [
+        "ELASTIC_USERNAME=elastic",
+        "ELASTIC_PASSWORD=DkIedPPSCb",
+        "ES_JAVA_OPTS=-Xms512m -Xmx512m",
+        "CLI_JAVA_OPTS=-Xms2g -Xmx2g",
+        "bootstrap.memory_lock=true",
+        "discovery.type=single-node",
+        "xpack.security.enabled=true",
+        "xpack.security.enrollment.enabled=false",
+      ]
+
+  # logstash:
+  #    image: logstash:8.11.1
+  #    volumes:
+  #      # - ./logstash/config/logstash.yml:/usr/share/logstash/config/logstash.yml:ro
+  #      #- ./logstash/conf:/usr/share/logstash/pipeline:ro
+  #      - logstash-conf:/usr/share/logstash/pipeline
+  #    #      - /var/log/GDPR/myapplication:/var/log/GDPR/myapplication:ro
+  #    ports:
+  #      - "5001:5001"
+  #    environment:
+  #      LS_JAVA_OPTS: "-Xmx256m -Xms256m"
+  #      ELASTICSEARCH_HOSTS: http://es-container:9200
+  #    networks:
+  #      - elk
+  #    depends_on:
+  #      - elasticsearch
+  #    links:
+  #      - elasticsearch
+
+  ui:
+    build:
+      context: ./ecomm-ui
+      dockerfile: Dockerfile.dev
+    ports:
+      - "8888:80"
+    depends_on:
+      - gateway
+      - db
+      - user
+      - product
+      - order
+      - cart
+
+networks:
+  elk:
+    driver: bridge
+
+volumes:
+  esdata:
+    driver: local
+  postgres-ecomm-data:
+  logstash-conf:
