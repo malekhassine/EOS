@@ -26,7 +26,9 @@ pipeline {
 
          stage('Projets Build Stage') {
         steps {
+            dir('ecomm-cart'){
             sh 'mvn clean install -DskipTests'
+        }
         }
     }
 
