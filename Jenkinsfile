@@ -100,9 +100,7 @@ pipeline {
         }
 
         stage('Docker Push') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
+          
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
