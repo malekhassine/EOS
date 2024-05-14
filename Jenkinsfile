@@ -63,6 +63,22 @@ pipeline {
                 }
             }
         }
+        stage('SonarQube Analysis') {
+          
+            steps {
+                script {
+                    // Perform static analysis with SonarQube for each microservice
+                    for (def service in microservices) {
+                        dir(service) {
+                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
+                                sh 'mvn sonar:sonar'
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
 
 
         stage('Docker Login') {
