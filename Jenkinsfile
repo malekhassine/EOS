@@ -28,7 +28,7 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             // Run TruffleHog to check for secrets in the repository
-                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/youssefrmili/Ecommerce-APP.git > trufflehog.json'
+                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
                             sh 'cat trufflehog.json' // Output the results
                         }
                     }
