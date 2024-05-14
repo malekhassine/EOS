@@ -71,7 +71,7 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             withSonarQubeEnv(credentialsId: 'sonar') {
-                                sh 'mvn sonar:sonar'
+                               sh  "${SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectName=${service} -Dsonar.projectKey=${service} -Dsonar.java.binaries=."
                             }
                         }
                     }
