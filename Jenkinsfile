@@ -3,6 +3,11 @@ def microservices = ['ecomm-cart']
 
 pipeline {
     agent any
+    tools {
+    maven 'maven'
+    
+}
+
 
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
@@ -10,14 +15,9 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Git checkout Stage') {
             steps {
-                // Checkout the repository from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
-                    userRemoteConfigs: [[url: 'https://github.com/malekhassine/EOS.git']]
-                ])
+                git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
             }
         }
 
