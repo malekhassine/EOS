@@ -72,7 +72,26 @@ pipeline {
                 }
             }
         }
+stage('SonarQube Analysis') {
+               when {
+                              expression {
+                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                              }
+                          }
+          steps {
+            script {
+               // Run unit tests for each microservice using Maven
+                  for (def service in microservices) {
+                     dir(service) {
+                         withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
 
+                          }
+             }
+           }
+          }
+         }
+        }
        
 
         stage('Docker Login') {
