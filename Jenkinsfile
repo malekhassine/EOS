@@ -87,7 +87,7 @@ stage('SonarQube Analysis') {
                             sh 'mvn sonar:sonar'
 
                           }
-                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-check'
+                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
              }
            }
           }
