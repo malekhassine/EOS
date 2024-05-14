@@ -70,7 +70,7 @@ pipeline {
                     // Perform static analysis with SonarQube for each microservice
                     for (def service in microservices) {
                         dir(service) {
-                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
+                            withSonarQubeEnv(credentialsId: 'sonar') {
                                 sh 'mvn sonar:sonar'
                             }
                         }
