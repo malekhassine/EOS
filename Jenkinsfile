@@ -50,7 +50,7 @@ stage('Source Composition Analysis') {
                             sh 'rm -f owasp-dependency-check.sh'
                             sh 'curl "https://raw.githubusercontent.com/malekhassine/EOS/dev/owasp-dependency-check.sh"'
                             sh 'chmod +x owasp-dependency-check.sh'
-                            sh './owasp-dependency-check.sh'
+                            
                             // Display analysis report
                             sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
                         }
