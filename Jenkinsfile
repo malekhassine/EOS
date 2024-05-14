@@ -38,27 +38,17 @@ pipeline {
                 }
             }
         }
-stage('Source Composition Analysis') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-                script {
-                    // Perform OWASP dependency check for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            sh 'rm -f owasp-dependency-check.sh'
-                            sh 'curl "https://raw.githubusercontent.com/malekhassine/EOS/dev/owasp-dependency-check.sh"'
-                            sh 'chmod +x owasp-dependency-check.sh'
-                            
-                            // Display analysis report
-                            sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
-                        }
-                    }
-                }
-            }
-        }
+stage('OWASP Dependency-Check Vulnerabilities') {
+      steps {
+        dependencyCheck additionalArguments: ''' 
+                    -o './'
+                    -s './'
+                    -f 'ALL' 
+                    --prettyPrint''', odcInstallation: 'dependency-Check'
 
+        dependencyCheckPublisher pattern: 'dependency-check-report.xml'
+      }
+    }
       
 
         stage('Build') {
