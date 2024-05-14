@@ -38,25 +38,26 @@ pipeline {
                 }
             }
         }
- stage('Source Composition Analysis') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Perform OWASP dependency check for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            
-                            sh 'chmod +x owasp-dependency-check.sh'
-                            sh './owasp-dependency-check.sh'
-                            // Display analysis report
-                            sh 'cat /var/lib/jenkins/OWASP-Dependency-Check/reports/dependency-check-report.xml'
-                        }
-                    }
-                }
+stage('Source Composition Analysis') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            // Perform OWASP dependency check for each microservice
+            for (def service in microservices) {
+                bat( returnStdout: true, script: """
+                    cd /d %service%
+                    del /f owasp-dependency-check.bat (optional: Delete existing script)
+                    curl -O https://raw.githubusercontent.com/malekhassine/EOS/dev/owasp-dependency-check.bat  (Download script using curl)
+                    dependency-check.bat --project "${service}" --scan "%service%\lib"  (Execute dependency check)
+                    type dependency-check-report.xml  (Display report)
+                """)
             }
         }
+    }
+}
+
       
 
         stage('Build') {
