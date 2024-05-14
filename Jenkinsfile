@@ -99,7 +99,7 @@ stage('SonarQube Analysis and dependency check') {
          sh 'mvn deploy -DskipTests'
        }
        
-
+         }
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
