@@ -41,12 +41,13 @@ pipeline {
 
          stage('Projets Build Stage') {
         steps {
+            script {
             for (def service in microservices) {
                         dir(service) {
             sh 'mvn clean install -DskipTests'
         }
         }
-    }
+    }}
          }
 
         stage('Unit Test') {
