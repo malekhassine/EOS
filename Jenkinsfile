@@ -41,12 +41,13 @@ pipeline {
 
          stage('Projets Build Stage') {
         steps {
-            dir('ecomm-cart'){
+            for (def service in microservices) {
+                        dir(service) {
             sh 'mvn clean install -DskipTests'
         }
         }
     }
-
+         }
 
         stage('Unit Test') {
            
