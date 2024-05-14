@@ -72,7 +72,7 @@ pipeline {
                 }
             }
         }
-stage('SonarQube Analysis') {
+stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -93,6 +93,11 @@ stage('SonarQube Analysis') {
           }
          }
         }
+
+         stage ('NEXUS DEPLOY') {
+       steps {
+         sh 'mvn deploy -DskipTests'
+       }
        
 
         stage('Docker Login') {
