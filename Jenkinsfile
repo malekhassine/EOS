@@ -103,9 +103,9 @@ stage('SonarQube Analysis and dependency check') {
                     //  for each microservice using Maven
                     for (def service in microservices) {
                         dir(service) {
-         steps {
+         
          sh 'mvn deploy -DskipTests'
-       }
+       
        
          }}}}}
         stage('Docker Login') {
