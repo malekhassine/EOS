@@ -95,11 +95,19 @@ stage('SonarQube Analysis and dependency check') {
         }
 
          stage ('NEXUS DEPLOY') {
-       steps {
+             when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                script {
+                    //  for each microservice using Maven
+                    for (def service in microservices) {
+                        dir(service) {
+         steps {
          sh 'mvn deploy -DskipTests'
        }
        
-         }
+         }}}}}
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
