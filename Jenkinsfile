@@ -133,11 +133,7 @@ stage('SonarQube Analysis and dependency check') {
 
       stage('Trivy Image Scan') {
 
- when {
-
-  expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-
- }
+ when {expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }}
 
  steps {
 
