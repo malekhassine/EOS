@@ -179,12 +179,19 @@ stage('SonarQube Analysis and dependency check') {
                     }
                 }
             }
-            post {
+         post {
+  // Success notification
   success {
-    slackSend channel: '#dev', color: 'good', message: 'Pipeline '${env.JOB_NAME}' Build Successful!'
+    script {
+      slackSend channel: '#dev', color: 'good', message: 'Pipeline '${env.JOB_NAME}' Build Successful!'
+    }
   }
+
+  // Failure notification
   failure {
-    slackSend channel: '#dev', color: 'danger', message: 'Pipeline '${env.JOB_NAME}' Build Failed!'
+    script {
+      slackSend channel: '#dev', color: 'danger', message: 'Pipeline '${env.JOB_NAME}' Build Failed!'
+    }
   }
 }
 
