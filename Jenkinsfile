@@ -184,7 +184,8 @@ stage('SonarQube Analysis and dependency check') {
                 }
 	    }
 	}
-		post {
+    }
+post {
   // Success notification
   success {
     script {
@@ -203,6 +204,6 @@ stage('SonarQube Analysis and dependency check') {
 
 
         }
-    }
+    
 
 
