@@ -183,21 +183,15 @@ stage('SonarQube Analysis and dependency check') {
                     }
                 }
             }
-         post {
-  // Success notification
-  success {
-    script {
-      slackSend channel: '#dev', color: 'good', message: 'Pipeline '${env.JOB_NAME}' Build Successful!'
-    }
-  }
-
-  // Failure notification
-  failure {
-    script {
-      slackSend channel: '#dev', color: 'danger', message: 'Pipeline '${env.JOB_NAME}' Build Failed!'
-    }
+   post {
+  always {
+    echo 'Slack Notifications.'
+    slackSend channel: '#cicd-pipeline',
+              color: COLOR_MAP[currentBuild.currentResult],
+              message: "*${currentBuild.currentResult}: Job $(env.30B_NAME) build $(env.BUILD_NUMBER) \n More info at: ${env.BUILD_URL}"  // Added closing double quote
   }
 }
+
 
         }
     }
