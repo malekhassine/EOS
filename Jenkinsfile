@@ -1,5 +1,9 @@
-
 def microservices = ['ecomm-cart']
+
+def COLOR_MAP = [
+	'FAILURE' : 'danger'
+	'SUCCESS' : 'good'
+]
 
 pipeline {
     agent any
