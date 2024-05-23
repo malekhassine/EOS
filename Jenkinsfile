@@ -204,3 +204,4 @@ stage('SonarQube Analysis and dependency check') {
         }
     }
 }
+}
