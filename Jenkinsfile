@@ -182,7 +182,8 @@ stage('SonarQube Analysis and dependency check') {
                         }
                     }
                 }
- 
+	    }
+	}
 		post {
   // Success notification
   success {
@@ -203,5 +204,5 @@ stage('SonarQube Analysis and dependency check') {
 
         }
     }
-}
-}
+
+
