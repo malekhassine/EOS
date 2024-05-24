@@ -16,6 +16,8 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
+	MASTER_NODE = 'https://192.168.63.133:6443'
+        KUBE_CREDENTIALS_ID = 'tokenmaster'
     }
 
     stages {
@@ -184,6 +186,27 @@ stage('SonarQube Analysis and dependency check') {
                 }
 	    }
 	}
+    }
+	stage('Deploy to Kubernetes') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                withCredentials([string(credentialsId: env.KUBE_CREDENTIALS_ID, variable: 'KUBE_TOKEN')]) {
+
+                script {
+	           
+                     if (env.BRANCH_NAME == 'test') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                        sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml" }
+
+                   else if (env.BRANCH_NAME == 'master') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml"                       
+ 			}
+                }
+            }
+        }
     }
 post {
   // Success notification
