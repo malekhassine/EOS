@@ -1,23 +1,30 @@
 
 def microservices = ['ecomm-cart']
 
+def COLOR_MAP = [
+	'FAILURE' : 'danger',
+	'SUCCESS' : 'good'
+]
+
 pipeline {
     agent any
+    tools {
+    maven 'maven'
+    
+}
+
 
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
+	MASTER_NODE = 'https://192.168.63.133:6443'
+        KUBE_CREDENTIALS_ID = 'tokenmaster'
     }
 
     stages {
-        stage('Checkout') {
+        stage('Git checkout Stage') {
             steps {
-                // Checkout the repository from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
-                    userRemoteConfigs: [[url: 'https://github.com/malekhassine/EOS.git']]
-                ])
+                git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
             }
         }
 
@@ -72,25 +79,29 @@ pipeline {
                 }
             }
         }
+stage('SonarQube Analysis and dependency check') {
+               when {
+                              expression {
+                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                              }
+                          }
+          steps {
+            script {
+               // Run unit tests for each microservice using Maven
+                  for (def service in microservices) {
+                     dir(service) {
+                         withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
 
-        stage('SonarQube Analysis') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Perform static analysis with SonarQube for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
-                                sh 'mvn sonar:sonar'
-                            }
-                        }
-                    }
-                }
-            }
+                          }
+                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
+             }
+           }
+          }
+         }
         }
 
+         
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -127,7 +138,7 @@ pipeline {
             }
         }
 
-        stage('Trivy Image Scan') {
+  stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -136,17 +147,23 @@ pipeline {
                     // Scan each Docker image for vulnerabilities using Trivy
                     for (def service in microservices) {
                         def trivyReportFile = "trivy-${service}.txt"
-                        if (env.BRANCH_NAME == 'test') {
+
+                    // Combine vulnerability and severity filters for clarity and flexibility
+                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
+ if (env.BRANCH_NAME == 'test') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'master') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'dev') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
+                         // Archive Trivy reports for all microservices in a dedicated directory
+                        archiveArtifacts "**/*.txt"
                     }
                 }
             }
         }
+
 
         stage('Docker Push') {
             when {
@@ -168,7 +185,48 @@ pipeline {
                         }
                     }
                 }
+	    }
+	}
+        stage('Deploy to Kubernetes') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                withCredentials([string(credentialsId: env.KUBE_CREDENTIALS_ID, variable: 'KUBE_TOKEN')]) {
+
+                script {
+	           
+                     if (env.BRANCH_NAME == 'test') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                        sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml" }
+
+                   else if (env.BRANCH_NAME == 'master') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml"                       
+ 			}
+                }
             }
         }
     }
+    }
+	
+post {
+  // Success notification
+  success {
+    script {
+      slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful!"
+    }
+  }
+  // Failure notification
+  failure {
+    script {
+      slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' Build Failed!"
+    }
+  }
 }
+
+
+
+
+        }
+    
