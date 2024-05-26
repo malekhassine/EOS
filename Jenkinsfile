@@ -187,30 +187,30 @@ stage('SonarQube Analysis and dependency check') {
                 }
 	    }
 	}
-        stage('Deploy to Kubernetes') {
-            when {
-                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                
+      stage('Deploy to Kubernetes') {
+    when {
+        expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }}
+    steps {
+        script {
+            def kubeToken = credentials('newmastertoken')  // Replace 'KUBE_TOKEN_ID' with the ID of your secret text credential
+            def kubectlBaseCmd = "./kubectl --token=${kubeToken}"  // Use the downloaded kubectl
 
-                script {
-		def kubeToken = credentials('newmastertoken')  // Replace 'KUBE_TOKEN_ID' with the ID of your secret text credential
-                def kubectlBaseCmd = "kubectl --token=${kubeToken}"
-                     if (env.BRANCH_NAME == 'test') {
-			     sh 'curl -LO https://dl.k8s.io/release/v1.30.0/bin/linux/amd64/kubectl'
-                             sh 'chmod u+x ./kubectl'
-                            sh ''' ${kubectlBaseCmd} apply -f cart.yml '''
-                            sh ''' ${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml '''
-                   else if (env.BRANCH_NAME == 'master') {
-			   sh 'chmod u+x ./kubectl'
-                             sh ''' ${kubectlBaseCmd} apply -f cart.yml '''
-                             sh ''' ${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml '''                    
- 			}
-                }
+            // Download kubectl v1.30.1
+            sh 'curl -LO https://dl.k8s.io/release/v1.30.1/bin/linux/amd64/kubectl'
+            sh 'chmod u+x ./kubectl'
+
+            // Use the downloaded kubectl for deployment
+            if (env.BRANCH_NAME == 'test') {
+                sh "${kubectlBaseCmd} apply -f cart.yml"
+                sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f namespace.yml"
+            } else if (env.BRANCH_NAME == 'master') {
+                sh "${kubectlBaseCmd} apply -f cart.yml"
+                sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f namespace.yml"
             }
         }
     }
+}
+
     }
 	
 post {
