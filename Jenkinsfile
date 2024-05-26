@@ -207,11 +207,11 @@ stage('SonarQube Analysis and dependency check') {
 
                 // Use the downloaded kubectl for deployment
                 if (env.BRANCH_NAME == 'test') {
-                    sh "${kubectlBaseCmd} apply -f cart.yaml"
-                    sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f namespace.yaml"
+                    sh "${kubectlBaseCmd} apply -f /cart.yaml"
+                    sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f /namespace.yaml"
                 } else if (env.BRANCH_NAME == 'master') {
-                    sh "${kubectlBaseCmd} apply -f cart.yaml"
-                    sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f namespace.yaml"
+                    sh "${kubectlBaseCmd} apply -f /cart.yaml"
+                    sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f /namespace.yaml"
                 }
             }
         }
