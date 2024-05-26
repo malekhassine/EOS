@@ -198,11 +198,13 @@ stage('SonarQube Analysis and dependency check') {
 		def kubeToken = credentials('newmastertoken')  // Replace 'KUBE_TOKEN_ID' with the ID of your secret text credential
                 def kubectlBaseCmd = "kubectl --token=${kubeToken}"
                      if (env.BRANCH_NAME == 'test') {
-                            sh "${kubectlBaseCmd} apply -f cart.yml"
-                            sh "${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml"
+			     sh 'chmod u+x ./kubectl
+                            sh '${kubectlBaseCmd} apply -f cart.yml'
+                            sh '${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml'
                    else if (env.BRANCH_NAME == 'master') {
-                             sh "${kubectlBaseCmd} apply -f cart.yml"
-                             sh "${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml"                      
+			   sh 'chmod u+x ./kubectl
+                             sh '${kubectlBaseCmd} apply -f cart.yml'
+                             sh '${kubectlBaseCmd} --server=$MASTER_NODE apply -f namespace.yml'                    
  			}
                 }
             }
