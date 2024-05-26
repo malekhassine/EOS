@@ -18,7 +18,7 @@ pipeline {
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
 	MASTER_NODE = 'https://192.168.63.133:6443'
-        KUBE_CREDENTIALS_ID = 'tokenmaster'
+        KUBE_CREDENTIALS_ID = 'newmastertoken'
     }
 
     stages {
