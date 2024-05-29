@@ -15,6 +15,7 @@ pipeline {
 
 
     environment {
+	TIMEOUT_VALUE = '600m'
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
 	MASTER_NODE = 'https://192.168.63.136:6443'
@@ -140,6 +141,16 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
+	     stages {
+        stage('Update Trivy Database') {
+            steps {
+                script {
+                    // Clear the Trivy database cache to ensure the most current data is used
+                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy --reset'
+                }
+            }
+        }
+    }
 
   
         stage('Trivy Image Scan') {
