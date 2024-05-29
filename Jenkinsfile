@@ -142,17 +142,15 @@ stage('SonarQube Analysis and dependency check') {
             }
         }
 	     
-        stage('Update Trivy Database') {
+      stage('Update Trivy Database') {
             steps {
                 script {
-                    // Clear the Trivy database cache to ensure the most current data is used
-                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy --reset'
+                    // Update the Trivy database
+                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
                 }
             }
         }
-    
 
-  
         stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -176,8 +174,7 @@ stage('SonarQube Analysis and dependency check') {
                             docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v $PWD:/tmp/.cache/ \
-                            aquasec/trivy image --reset \
-                            --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
+                            aquasec/trivy image --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
                             --timeout ${TIMEOUT_VALUE} \
                             ${imageTag} > ${trivyReportFile}
                         """
@@ -188,6 +185,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
+
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
