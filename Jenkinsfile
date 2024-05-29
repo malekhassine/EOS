@@ -216,7 +216,7 @@ stage('SonarQube Analysis and dependency check') {
                     deployenv = 'prod'
                 }
 		    sh "rm -f deploy_to_${deployenv}.sh"
-                        sh "wget \"https://raw.githubusercontent.com/youssefrmili/Ecommerce-APP/test/deploy_to_${deployenv}.sh\""
+                        sh "wget \"https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_test.sh\""
                         sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE ./deploy_to_${deployenv}.sh"
