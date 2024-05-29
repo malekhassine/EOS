@@ -141,7 +141,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-	     stages {
+	     
         stage('Update Trivy Database') {
             steps {
                 script {
@@ -150,7 +150,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-    }
+    
 
   
         stage('Trivy Image Scan') {
