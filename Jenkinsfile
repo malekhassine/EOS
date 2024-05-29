@@ -17,11 +17,11 @@ pipeline {
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
-	MASTER_NODE = 'https://192.168.63.133:6443'
-        KUBE_CREDENTIALS_ID = 'newmastertoken'
-        REMOTE_USER = 'master'       // SSH username on the master node
-        REMOTE_HOST = '192.168.63.133'  // IP or hostname of the master node
-        SSH_CREDENTIALS_ID = 'master-ssh' // ID of the SS
+	MASTER_NODE = 'https://192.168.63.136:6443'
+        KUBE_CREDENTIALS_ID = 'tokemaster2'
+        //REMOTE_USER = 'master'       // SSH username on the master node
+        //REMOTE_HOST = '192.168.63.133'  // IP or hostname of the master node
+        //SSH_CREDENTIALS_ID = 'master-ssh' // ID of the SS
     }
 
     stages {
@@ -195,33 +195,37 @@ stage('SonarQube Analysis and dependency check') {
         expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
-	     sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
         script {
 	
             // Define the Kubernetes credentials ID
-           // def kubeCredentialsId = 'newmastertoken'
+            def kubeCredentialsId = 'tokemaster2'
             
             // Use withCredentials to securely access Kubernetes token
-            //withCredentials([string(credentialsId: kubeCredentialsId, variable: 'KUBE_TOKEN')]) {
+            withCredentials([string(credentialsId: kubeCredentialsId, variable: 'KUBE_TOKEN')]) {
                 // Define the kubectl base command with token
-               // def kubectlBaseCmd = "./kubectl --token=${KUBE_TOKEN}"
+                def kubectlBaseCmd = "./kubectl --token=${KUBE_TOKEN}"
                 
                 // Download kubectl v1.30.1
                 sh 'curl -LO https://dl.k8s.io/release/v1.30.1/bin/linux/amd64/kubectl'
                 sh 'chmod u+x ./kubectl'
-
+		 def deployenv = ''
                 // Use the downloaded kubectl for deployment
                 if (env.BRANCH_NAME == 'test') {
-                    //sh "${kubectlBaseCmd} apply -f /cart.yaml"
-                    //sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f /namespace.yaml"
-			sh "ssh -o StrictHostKeyChecking=no ${env.REMOTE_USER}@${env.REMOTE_HOST} apply -f /cart.yaml"
-			sh "ssh -o StrictHostKeyChecking=no ${env.REMOTE_USER}@${env.REMOTE_HOST} apply -f /namespace.yaml"
+                     deployenv = 'test'
                 } else if (env.BRANCH_NAME == 'master') {
-                    //sh "${kubectlBaseCmd} apply -f /cart.yaml"
-                    //sh "${kubectlBaseCmd} --server=${MASTER_NODE} apply -f /namespace.yaml"
-		    sh "ssh -o StrictHostKeyChecking=no ${env.REMOTE_USER}@${env.REMOTE_HOST} apply -f /cart.yaml"
-	            sh "ssh -o StrictHostKeyChecking=no ${env.REMOTE_USER}@${env.REMOTE_HOST} apply -f /namespace.yaml"
+                    deployenv = 'prod'
                 }
+		    sh "rm -f deploy_to_${deployenv}.sh"
+                        sh "wget \"https://raw.githubusercontent.com/youssefrmili/Ecommerce-APP/test/deploy_to_${deployenv}.sh\""
+                        sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
+                        sh "${kubectlBaseCmd} --server=$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
+                        sh "${kubectlBaseCmd} --server=$MASTER_NODE ./deploy_to_${deployenv}.sh"
+                        sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                        sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                        for (def service in services) {
+                            sh "ssh $MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                        }
+		    
             }
         }
     }
