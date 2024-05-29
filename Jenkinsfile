@@ -141,33 +141,42 @@ stage('SonarQube Analysis and dependency check') {
             }
         }
 
-  stage('Trivy Image Scan') {
+  
+        stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                 script {
                     // Scan each Docker image for vulnerabilities using Trivy
-                    for (def service in microservices) {
+                    for (def service : microservices) {
                         def trivyReportFile = "trivy-${service}.txt"
+                        def imageTag
 
-                    // Combine vulnerability and severity filters for clarity and flexibility
-                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
- if (env.BRANCH_NAME == 'test') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
+                        if (env.BRANCH_NAME == 'test') {
+                            imageTag = "${DOCKERHUB_USERNAME}/${service}_test:latest"
                         } else if (env.BRANCH_NAME == 'master') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
+                            imageTag = "${DOCKERHUB_USERNAME}/${service}_prod:latest"
                         } else if (env.BRANCH_NAME == 'dev') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
+                            imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
                         }
-                         // Archive Trivy reports for all microservices in a dedicated directory
-                        archiveArtifacts "**/*.txt"
+
+                        sh """
+                            docker run --rm \
+                            -v /var/run/docker.sock:/var/run/docker.sock \
+                            -v $PWD:/tmp/.cache/ \
+                            aquasec/trivy image --reset \
+                            --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
+                            --timeout ${TIMEOUT_VALUE} \
+                            ${imageTag} > ${trivyReportFile}
+                        """
+
+                        // Archive Trivy reports for all microservices in a dedicated directory
+                        archiveArtifacts artifacts: trivyReportFile, allowEmptyArchive: true
                     }
                 }
             }
         }
-
-
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
