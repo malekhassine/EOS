@@ -234,14 +234,14 @@ stage('SonarQube Analysis and dependency check') {
                     deployenv = 'prod'
                 }
 		    sh "rm -f deploy_to_${deployenv}.sh"
-                        sh "wget \"https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_test.sh\""
+                       sh 'curl -O https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_test.sh'
                         sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE ./deploy_to_${deployenv}.sh"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
                         for (def service in services) {
-                            sh "ssh $MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+                            sh " ${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                         }
 		    
             }
