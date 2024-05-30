@@ -18,11 +18,11 @@ pipeline {
 	TIMEOUT_VALUE = '600m'
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
-	MASTER_NODE = 'https://192.168.63.136:6443'
+	MASTER_NODE = '192.168.63.136:6443'
         KUBE_CREDENTIALS_ID = 'tokemaster2'
-        //REMOTE_USER = 'master'       // SSH username on the master node
-        //REMOTE_HOST = '192.168.63.133'  // IP or hostname of the master node
-        //SSH_CREDENTIALS_ID = 'master-ssh' // ID of the SS
+        REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
+        REMOTE_HOST = '192.168.63.136'  // IP or hostname of the master node
+	SSH_CREDENTIALS_ID = 'id_rsa' // ID of the SSh rsa key
     }
 
     stages {
@@ -213,6 +213,7 @@ stage('SonarQube Analysis and dependency check') {
         expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
+	     sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
         script {
 	
             // Define the Kubernetes credentials ID
@@ -236,7 +237,7 @@ stage('SonarQube Analysis and dependency check') {
 		    sh "rm -f deploy_to_${deployenv}.sh"
                        sh 'curl -O https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_test.sh'
                         sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
-                        sh "${kubectlBaseCmd} --server=$MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
+                        sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE ./deploy_to_${deployenv}.sh"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
                         sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
@@ -251,6 +252,7 @@ stage('SonarQube Analysis and dependency check') {
 
 
     }
+}
 }
 	
 post {
