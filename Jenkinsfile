@@ -20,7 +20,7 @@ pipeline {
         KUBE_CREDENTIALS_ID = 'tokenmaster'
     }
 
-    stages {
+    stages{
         stage('Git checkout Stage') {
             steps {
                 git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
@@ -186,8 +186,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
 	    }
 	}
-    }
-	stage('Deploy to Kubernetes') {
+	    stage('Deploy to Kubernetes') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -208,6 +207,8 @@ stage('SonarQube Analysis and dependency check') {
             }
         }
     }
+    }
+	
 post {
   // Success notification
   success {
