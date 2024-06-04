@@ -211,7 +211,8 @@ stage('SonarQube Analysis and dependency check') {
 	    }
 	}*/
 	
-     stage('Deploy to Kubernetes test env') {
+   /*
+   stage('Deploy to Kubernetes test env') {
     when {
         expression { (env.BRANCH_NAME == 'test') }
     }
@@ -221,7 +222,7 @@ stage('SonarQube Analysis and dependency check') {
 		sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
 		sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
 		sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
-		
+	*/	
 		
 	/*
             // Define the Kubernetes credentials ID
