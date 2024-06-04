@@ -264,12 +264,12 @@ stage('SonarQube Analysis and dependency check') {
 	     sshagent(credentials: [env.SSH_K8S_PROD]) {
         script {sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
 		sh " ssh-keyscan -t rsa,dsa ${K8S_EC2_MASTER} >> ~/.ssh/known_hosts "
-		sh " ssh $K8S_EC2_MASTER whoami "
-
-
-    }
+		sh " ssh $K8S_EC2_MASTER whoami "}
 }
-    }}}
+	    }
+	     }
+    }}
+	    
 	
 post {
   // Success notification
