@@ -18,10 +18,10 @@ pipeline {
 	TIMEOUT_VALUE = '600m'
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
-	//MASTER_NODE = '192.168.63.136:6443'
+	//MASTER_NODE = '192.168.63.137:6443'
         KUBE_CREDENTIALS_ID = 'tokemaster2'
         REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
-        REMOTE_HOST = '192.168.63.136'  // IP or hostname of the master node
+        REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
 	SSH_K8S_TEST = 'id_rsa' // ID of the SSh rsa key
 	// SSH_K8S_PROD = bech na3mlou fil aws env 
     }
