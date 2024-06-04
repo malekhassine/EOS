@@ -150,7 +150,7 @@ pipeline {
                 }
             }
         }
-        stage('Update Trivy Database') {
+     /*   stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -192,7 +192,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
 
         stage('Docker Push') {
