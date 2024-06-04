@@ -1,5 +1,11 @@
 
 def microservices = ['ecomm-cart']
+def deployenv = ''
+if (env.BRANCH_NAME == 'test') {
+    deployenv = 'test'
+} else if (env.BRANCH_NAME == 'master') {
+    deployenv = 'prod'
+}
 
 def COLOR_MAP = [
 	'FAILURE' : 'danger',
@@ -16,12 +22,12 @@ pipeline {
 
     environment {
 	TIMEOUT_VALUE = '600m'
-        DOCKERHUB_USERNAME = "malekhassine"
-        // Ensure Docker credentials are stored securely in Jenkins
+    DOCKERHUB_USERNAME = "malekhassine"
+     // Ensure Docker credentials are stored securely in Jenkins
 	//MASTER_NODE = '192.168.63.137:6443'
-        KUBE_CREDENTIALS_ID = 'tokemaster2'
-        REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
-        REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
+    KUBE_CREDENTIALS_ID = 'tokemaster2'
+    REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
+    REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
 	SSH_K8S_TEST = 'id_rsa' // ID of the SSh rsa key
 	SSH_K8S_PROD = 'aws-ssh-id'
 	K8S_EC2_USER= 'ubuntu'
@@ -35,7 +41,7 @@ pipeline {
             }
         }
 
-  /*      stage('Check Git Secrets') {
+        stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -86,7 +92,7 @@ pipeline {
                 }
             }
         }
-stage('SonarQube Analysis and dependency check') {
+        stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -144,8 +150,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-	     
-      stage('Update Trivy Database') {
+        stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -154,40 +159,32 @@ stage('SonarQube Analysis and dependency check') {
             }
         }
 
-        stage('Trivy Image Scan') {
+         stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                 script {
                     // Scan each Docker image for vulnerabilities using Trivy
-                    for (def service : microservices) {
+                    for (def service in microservices) {
                         def trivyReportFile = "trivy-${service}.txt"
-                        def imageTag
 
+                    // Combine vulnerability and severity filters for clarity and flexibility
+                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
                         if (env.BRANCH_NAME == 'test') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_test:latest"
+                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'master') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_prod:latest"
+                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'dev') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
+                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
-
-                        sh """
-                            docker run --rm \
-                            -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v $PWD:/tmp/.cache/ \
-                            aquasec/trivy image --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
-                            --timeout ${TIMEOUT_VALUE} \
-                            ${imageTag} > ${trivyReportFile}
-                        """
-
-                        // Archive Trivy reports for all microservices in a dedicated directory
-                        archiveArtifacts artifacts: trivyReportFile, allowEmptyArchive: true
+                         // Archive Trivy reports for all microservices in a dedicated directory
+                        archiveArtifacts "**/*.txt"
                     }
                 }
             }
         }
+
 
         stage('Docker Push') {
             when {
@@ -210,67 +207,31 @@ stage('SonarQube Analysis and dependency check') {
                     }
                 }
 	    }
-	}*/
-	
-   /*
-   stage('Deploy to Kubernetes test env') {
-    when {
-        expression { (env.BRANCH_NAME == 'test') }
-    }
-    steps {
-	     sshagent(credentials: [env.SSH_K8S_TEST]) {
-        script {
-		sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-		sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
-		sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
-	*/	
-		
-	/*
-            // Define the Kubernetes credentials ID
-            def kubeCredentialsId = 'tokemaster2'
-            
-            // Use withCredentials to securely access Kubernetes token
-            withCredentials([string(credentialsId: kubeCredentialsId, variable: 'KUBE_TOKEN')]) {
-                // Define the kubectl base command with token
-                def kubectlBaseCmd = "./kubectl --token=${KUBE_TOKEN}"
-                
-                 Download kubectl v1.30.1
-                sh 'curl -LO https://dl.k8s.io/release/v1.30.1/bin/linux/amd64/kubectl'
-               sh 'chmod u+x ./kubectl'
-		 def deployenv = ''
-                // Use the downloaded kubectl for deployment
-                if (env.BRANCH_NAME == 'test') {
-                     deployenv = 'test'
-                } else if (env.BRANCH_NAME == 'master') {
-                    deployenv = 'prod'
-                }
-		    sh "rm -f deploy_to_${deployenv}.sh"
-                       sh 'curl -O https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_test.sh'
-                        sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
-                        sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
-                        sh "${kubectlBaseCmd} --server=$MASTER_NODE ./deploy_to_${deployenv}.sh"
-                        sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/namespace.yml"
-                        sh "${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/infrastructure/"
-                        for (def service in services) {
-                            sh " ${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
+	}
+    stage('Deploy to Kubernetes') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                sshagent(credentials: [env.env.SSH_K8S_TEST]) {
+                    script{
+                        sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+		                sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
+		                sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/namespace.yml"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/infrastructure/"
+                        for (service in services) {
+                            sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                         }
-		    
-            }*/
-        
-    
+                    }
+                }
+            }
+        }
 
-	     stage('Deploy to Kubernetes prod env') {
-    when {expression { (env.BRANCH_NAME == 'test')||(env.BRANCH_NAME == 'master') }}
-    steps {
-	     sshagent(credentials: [env.SSH_K8S_PROD]) {
-        script {sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
-		sh " ssh-keyscan -t rsa,dsa ${K8S_EC2_MASTER} >> ~/.ssh/known_hosts "
-		sh " ssh $K8S_EC2_USER@$K8S_EC2_MASTER whoami "}
+
+
+    }
 }
-	    }
-	     }
-    }}
-	    
 	
 post {
   // Success notification
