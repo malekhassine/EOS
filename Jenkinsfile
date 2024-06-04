@@ -23,7 +23,8 @@ pipeline {
         REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
         REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
 	SSH_K8S_TEST = 'id_rsa' // ID of the SSh rsa key
-	// SSH_K8S_PROD = bech na3mlou fil aws env 
+	SSH_K8S_PROD = 'aws-ssh-id'
+	K8S_EC2_MASTER ='3.82.192.23'
     }
 
     stages {
@@ -210,9 +211,9 @@ stage('SonarQube Analysis and dependency check') {
 	    }
 	}*/
 	
-     stage('Deploy to Kubernetes') {
+     stage('Deploy to Kubernetes test env') {
     when {
-        expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+        expression { (env.BRANCH_NAME == 'test') }
     }
     steps {
 	     sshagent(credentials: [env.SSH_K8S_TEST]) {
@@ -256,6 +257,13 @@ stage('SonarQube Analysis and dependency check') {
         }
     }
 } }
+	     stage('Deploy to Kubernetes prod env') {
+    when {expression { (env.BRANCH_NAME == 'master') }}
+    steps {
+	     sshagent(credentials: [env.SSH_K8S_PROD]) {
+        script {sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+		sh " ssh-keyscan -t rsa,dsa ${K8S_EC2_MASTER} >> ~/.ssh/known_hosts "
+		sh " ssh $K8S_EC2_MASTER whoami "
 
 
     }
