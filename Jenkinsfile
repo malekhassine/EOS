@@ -257,7 +257,7 @@ stage('SonarQube Analysis and dependency check') {
 
     }
 }
-}
+
 	
 post {
   // Success notification
