@@ -255,9 +255,9 @@ stage('SonarQube Analysis and dependency check') {
                         }
 		    
             }*/
-        }
-    }
-} }
+        
+    
+
 	     stage('Deploy to Kubernetes prod env') {
     when {expression { (env.BRANCH_NAME == 'test')||(env.BRANCH_NAME == 'master') }}
     steps {
@@ -269,7 +269,7 @@ stage('SonarQube Analysis and dependency check') {
 
     }
 }
-    }}}}
+    }}}
 	
 post {
   // Success notification
