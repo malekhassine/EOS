@@ -125,11 +125,11 @@ stage('SonarQube Analysis and dependency check') {
                     for (def service in microservices) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
                             } else if (env.BRANCH_NAME == 'master') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_prod:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_prod:latest ."
                             } else if (env.BRANCH_NAME == 'dev') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_dev:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_dev:latest ."
                             }
                         }
                     }
