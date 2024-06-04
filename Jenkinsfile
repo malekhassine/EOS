@@ -217,9 +217,10 @@ stage('SonarQube Analysis and dependency check') {
     steps {
 	     sshagent(credentials: [env.SSH_K8S_TEST]) {
         script {
-		sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
 		sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
 		sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
+		sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
+		
 		
 	/*
             // Define the Kubernetes credentials ID
