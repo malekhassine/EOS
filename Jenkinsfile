@@ -18,11 +18,12 @@ pipeline {
 	TIMEOUT_VALUE = '600m'
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
-	MASTER_NODE = '192.168.63.136:6443'
+	//MASTER_NODE = '192.168.63.136:6443'
         KUBE_CREDENTIALS_ID = 'tokemaster2'
         REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
         REMOTE_HOST = '192.168.63.136'  // IP or hostname of the master node
-	SSH_CREDENTIALS_ID = 'id_rsa' // ID of the SSh rsa key
+	SSH_K8S_TEST = 'id_rsa' // ID of the SSh rsa key
+	// SSH_K8S_PROD = bech na3mlou fil aws env 
     }
 
     stages {
@@ -214,9 +215,11 @@ stage('SonarQube Analysis and dependency check') {
         expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
-	     sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+	     sshagent(credentials: [env.SSH_K8S_TEST]) {
         script {
-	
+		sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
+		
+	/*
             // Define the Kubernetes credentials ID
             def kubeCredentialsId = 'tokemaster2'
             
@@ -225,9 +228,9 @@ stage('SonarQube Analysis and dependency check') {
                 // Define the kubectl base command with token
                 def kubectlBaseCmd = "./kubectl --token=${KUBE_TOKEN}"
                 
-                // Download kubectl v1.30.1
+                 Download kubectl v1.30.1
                 sh 'curl -LO https://dl.k8s.io/release/v1.30.1/bin/linux/amd64/kubectl'
-                sh 'chmod u+x ./kubectl'
+               sh 'chmod u+x ./kubectl'
 		 def deployenv = ''
                 // Use the downloaded kubectl for deployment
                 if (env.BRANCH_NAME == 'test') {
@@ -246,10 +249,10 @@ stage('SonarQube Analysis and dependency check') {
                             sh " ${kubectlBaseCmd} --server=$MASTER_NODE kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                         }
 		    
-            }
+            }*/
         }
     }
-}
+} }
 
 
     }
