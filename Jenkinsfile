@@ -207,7 +207,7 @@ stage('SonarQube Analysis and dependency check') {
                     }
                 }
 	    }
-	}*/s
+	}*/
 	
      stage('Deploy to Kubernetes') {
     when {
