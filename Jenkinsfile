@@ -258,7 +258,7 @@ stage('SonarQube Analysis and dependency check') {
     }
 } }
 	     stage('Deploy to Kubernetes prod env') {
-    when {expression { (env.BRANCH_NAME == 'master') }}
+    when {expression { (env.BRANCH_NAME == 'test')||(env.BRANCH_NAME == 'master') }}
     steps {
 	     sshagent(credentials: [env.SSH_K8S_PROD]) {
         script {sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
