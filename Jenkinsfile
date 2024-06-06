@@ -226,9 +226,9 @@ pipeline {
                     script {
                         sh "rm -f deploy_to_${deployenv}.sh"
                         sh "wget \"https://raw.githubusercontent.com/malekhassine/EOS/test/deploy_to_${deployenv}.sh\""
-                        sh "scp deploy_to_${deployenv}.sh $MASTER_NODE:~"
-                        sh "ssh $MASTER_NODE chmod +x deploy_to_${deployenv}.sh"
-                        sh "ssh $MASTER_NODE ./deploy_to_${deployenv}.sh"
+                        sh "scp deploy_to_${deployenv}.sh $REMOTE_USER@$REMOTE_HOST:~"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST chmod +x deploy_to_${deployenv}.sh"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST ./deploy_to_${deployenv}.sh"
                     }
                 }
             }
