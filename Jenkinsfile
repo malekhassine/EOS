@@ -69,7 +69,7 @@ pipeline {
             steps {
                 script {
                     // Build each microservice using Maven
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             sh 'mvn clean install'
                         }
@@ -93,7 +93,7 @@ pipeline {
                 }
             }
         }
-       /* stage('SonarQube Analysis and dependency check') {
+        stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -113,7 +113,7 @@ pipeline {
            }
           }
          }
-        }*/
+        }
          
         stage('Docker Login') {
             when {
@@ -136,7 +136,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
@@ -195,14 +195,14 @@ pipeline {
         }*/
 
 
-       /* stage('Docker Push') {
+        stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
                             sh "docker rmi ${DOCKERHUB_USERNAME}/${service}_test:latest"
@@ -216,7 +216,7 @@ pipeline {
                     }
                 }
 	    }
-	}*/
+	}
 	     stage('Get YAML Files') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
