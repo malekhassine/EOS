@@ -245,7 +245,7 @@ pipeline {
 		                //sh " ssh $REMOTE_USER@$REMOTE_HOST kubectl get nodes  "
                         sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/namespace.yml"
                         sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/infrastructure/"
-                        for (service in services) {
+                        for (service in microservices) {
                             sh "ssh $REMOTE_USER@$REMOTE_HOST kubectl apply -f ${deployenv}_manifests/microservices/${service}.yml"
                         }
                     }
