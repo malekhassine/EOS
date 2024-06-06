@@ -195,7 +195,7 @@ pipeline {
         }*/
 
 
-        stage('Docker Push') {
+       /* stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -216,7 +216,7 @@ pipeline {
                     }
                 }
 	    }
-	}
+	}*/
 	     stage('Get YAML Files') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
