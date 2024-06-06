@@ -222,7 +222,7 @@ pipeline {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
             steps {
-                sshagent(credentials: [env.env.SSH_K8S_TEST]) {
+                sshagent(credentials: [env.SSH_K8S_TEST]) {
                     script{
                         sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
 		                sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
