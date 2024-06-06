@@ -17,18 +17,19 @@ pipeline {
     agent any
     tools {
     maven 'maven'
+    nodejs "Node20"
     
 }
 
 
     environment {
 	TIMEOUT_VALUE = '600m'
-    DOCKERHUB_USERNAME = "malekhassine"
+        DOCKERHUB_USERNAME = "malekhassine"
      // Ensure Docker credentials are stored securely in Jenkins
 	//MASTER_NODE = '192.168.63.137:6443'
-    KUBE_CREDENTIALS_ID = 'tokemaster2'
-    REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
-    REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
+        KUBE_CREDENTIALS_ID = 'tokemaster2'
+        REMOTE_USER = 'ubuntu'       // SSH username on the master node(echo $USER)
+        REMOTE_HOST = '192.168.63.137'  // IP or hostname of the master node
 	SSH_CREDENTIALS_ID = 'id_rsa' // ID of the SSh rsa key
 	//SSH_K8S_PROD = 'aws-ssh-id'
 	K8S_EC2_USER= 'ubuntu'
@@ -69,7 +70,7 @@ pipeline {
             steps {
                 script {
                     // Build each microservice using Maven
-                    for (def service in services) {
+                    for (def service in microservices) {
                         dir(service) {
                             sh 'mvn clean install'
                         }
@@ -136,7 +137,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
-                    for (def service in services) {
+                    for (def service in microservices) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
@@ -202,7 +203,7 @@ pipeline {
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
-                    for (def service in services) {
+                    for (def service in microservices) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
                             sh "docker rmi ${DOCKERHUB_USERNAME}/${service}_test:latest"
