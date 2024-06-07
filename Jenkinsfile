@@ -138,7 +138,7 @@ pipeline {
                   sh 'npm install --legacy-peer-deps' }
              } 
          }
-	    
+	    }
 	    stage('Build front ecomm-ui') { 
              when { 
                  expression { 
