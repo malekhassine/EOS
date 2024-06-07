@@ -151,7 +151,7 @@ pipeline {
 		      for (def service in frontendservice) {
                         dir(service) {
   
-                 sh 'ng build --configuration=production ' 
+                 sh 'npm run build --configuration=production ' 
                   echo 'Build stage done' }
              } 
          }
