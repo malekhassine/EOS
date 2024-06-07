@@ -14,7 +14,7 @@ COPY . .
 ENV PUBLIC_URL=/
 
 # Build the app
-RUN npm run build
+RUN npm run build --configuration=production
 
 # Nginx stage
 FROM nginx:stable-alpine
