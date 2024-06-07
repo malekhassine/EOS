@@ -132,12 +132,13 @@ pipeline {
             }
         }
 	    stage('Install Npm') { 
-             steps { 
+            steps {
+                script {
 		      for (def service in frontendservice) {
                         dir(service) {
                   sh 'npm install --legacy-peer-deps' }
              } 
-         }
+         }}
 	    }
 	    stage('Build front ecomm-ui') { 
              when { 
@@ -145,7 +146,8 @@ pipeline {
                     expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
                  } 
              } 
-             steps { 
+            steps {
+                script {
 		      for (def service in frontendservice) {
                         dir(service) {
   
@@ -153,6 +155,7 @@ pipeline {
                   echo 'Build stage done' }
              } 
          }
+	    }
 	    }
 
 
