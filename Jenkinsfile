@@ -131,11 +131,14 @@ pipeline {
                 }
             }
         }
-	    stage('Install') { 
+	    stage('Install Npm') { 
              steps { 
-                 sh 'npm install --legacy-peer-deps' 
+		      for (def service in frontendservice) {
+                        dir(service) {
+                  sh 'npm install --legacy-peer-deps' }
              } 
          }
+	    
 	    stage('Build front ecomm-ui') { 
              when { 
                  expression { 
@@ -143,10 +146,11 @@ pipeline {
                  } 
              } 
              steps { 
+		      for (def service in frontendservice) {
+                        dir(service) {
   
                  sh 'ng build --configuration=production ' 
-             
-                 echo 'Build stage done' 
+                  echo 'Build stage done' }
              } 
          }
 
