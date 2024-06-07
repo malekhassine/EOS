@@ -17,7 +17,8 @@ pipeline {
     agent any
     tools {
     maven 'maven'
-   
+    nodejs "Node20"
+	    
     
 }
 
@@ -42,7 +43,11 @@ pipeline {
                 git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
             }
         }
-
+        stage('Clean Workspace') {
+            steps {
+                cleanWs()
+            }
+        }
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -78,6 +83,7 @@ pipeline {
                 }
             }
         }
+	    
 
         stage('Unit Test') {
             when {
@@ -129,6 +135,28 @@ pipeline {
                 }
             }
         }
+	    stage('Install') { 
+             steps { 
+                 sh 'npm install --legacy-peer-deps' 
+             } 
+         }
+	    stage('Build front ecomm-ui') { 
+             when { 
+                 expression { 
+                    expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                 } 
+             } 
+             steps { 
+  
+                 sh 'ng build --configuration=production ' 
+             
+                 echo 'Build stage done' 
+             } 
+         }
+
+
+
+	    
 
         stage('Docker Build') {
             when {
