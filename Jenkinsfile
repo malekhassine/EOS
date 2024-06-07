@@ -17,7 +17,7 @@ pipeline {
     agent any
     tools {
     maven 'maven'
-    nodejs "Node20"
+    nodejs "node20"
 	    
     
 }
