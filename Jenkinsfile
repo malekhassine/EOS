@@ -218,7 +218,7 @@ pipeline {
                 }
 	    }
 	}
-	     stage('Get YAML Files') {
+	stage('Get YAML Files') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -234,7 +234,22 @@ pipeline {
                 }
             }
         }
-    stage('Deploy to Kubernetes') {
+	stage('Scan YAML Files') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                    script {
+                        sh "ssh $MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
+                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
+                    }
+                }
+            }
+        }
+       stage('Deploy to Kubernetes') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
