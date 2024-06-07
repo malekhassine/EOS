@@ -43,11 +43,7 @@ pipeline {
                 git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
             }
         }
-        stage('Clean Workspace') {
-            steps {
-                cleanWs()
-            }
-        }
+       
         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
