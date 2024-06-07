@@ -150,9 +150,9 @@ pipeline {
                 script {
 		      for (def service in frontendservice) {
                         dir(service) {
-  
-                 sh 'npm run build --configuration=production ' 
-                  echo 'Build stage done' }
+				sh "npm ci"
+  				sh 'CI=false npm run build --configuration=production ' 
+                  		echo 'Build stage done' }
              } 
          }
 	    }
