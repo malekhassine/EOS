@@ -137,7 +137,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
