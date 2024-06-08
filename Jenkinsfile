@@ -173,7 +173,7 @@ pipeline {
             steps {
                 script {
                     // Build Docker images for each microservice based on the branch
-                    for (def service in services) {
+                    for (def service in microservices) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
                                 sh "docker build --no-cache -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
@@ -184,9 +184,21 @@ pipeline {
                             }
                         }
                     }
+			for (def service in frontendservice) {
+                        dir('/var/jenkins_home/workspace/sofia_test/ecomm-ui') {
+                            if (env.BRANCH_NAME == 'test') {
+                                sh "docker build --no-cache -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
+                            } else if (env.BRANCH_NAME == 'master') {
+                                sh "docker build --no-cache -t ${DOCKERHUB_USERNAME}/${service}_prod:latest ."
+                            } else if (env.BRANCH_NAME == 'dev') {
+                                sh "docker build --no-cache -t ${DOCKERHUB_USERNAME}/${service}_dev:latest ."
+                            }
+			
                 }
             }
         }
+	    }
+	}
      /*   stage('Update Trivy Database') {
             steps {
                 script {
