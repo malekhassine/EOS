@@ -151,10 +151,13 @@ pipeline {
                 script {
 		      for (def service in frontendservice) {
                         dir(service) {
+				echo "Build directory: ${pwd()}"
 				sh "npm ci"
   				sh 'CI=false npm run build --configuration=production ' 
 				sh 'ls -la'
                   		echo 'Build stage done' }
+
+				
              } 
          }
 	    }
