@@ -74,6 +74,7 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             sh 'mvn clean install'
+			    sh 'ls -la'
                         }
                     }
                 }
@@ -152,6 +153,7 @@ pipeline {
                         dir(service) {
 				sh "npm ci"
   				sh 'CI=false npm run build --configuration=production ' 
+				sh 'ls -la'
                   		echo 'Build stage done' }
              } 
          }
