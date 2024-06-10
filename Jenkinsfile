@@ -279,6 +279,25 @@ pipeline {
                 }
             }
         }
+	    stage('Scan YAML Files') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+                    script {
+			sh " [ -d ~/.ssh ] || mkdir ~/.ssh && chmod 0700 ~/.ssh "
+                        sh " ssh-keyscan -t rsa,dsa ${REMOTE_HOST} >> ~/.ssh/known_hosts "
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST rm -f kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST rm -f kubescape_microservices_${deployenv}.txt"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml -v > kubescape_infrastructure_${deployenv}.txt'"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST cat kubescape_infrastructure_${deployenv}.txt"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST 'kubescape scan ${deployenv}_manifests/microservices/*.yml -v > kubescape_microservices_${deployenv}.txt'"
+                        sh "ssh $REMOTE_USER@$REMOTE_HOST cat kubescape_microservices_${deployenv}.txt"
+                    }
+                }
+            }
+        }
 	
        stage('Deploy to Kubernetes') {
             when {
