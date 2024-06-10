@@ -251,7 +251,7 @@ pipeline {
             steps {
                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
                     sh "ssh $REMOTE_USER@$REMOTE_HOST 'cd ~ && chmod +x kube-bench &&./kube-bench --config-dir cfg --config cfg/config.yaml > kubebench_CIS_${env.BRANCH_NAME}.txt'"
-                    sh "ssh $REMOTE_USER@$REMOTE_HOST cat ~/kubebench_CIS_${env.BRANCH_NAME}.txt"
+                    sh "ssh $REMOTE_USER@$REMOTE_HOST sudo cat ~/kubebench_CIS_${env.BRANCH_NAME}.txt"
                 }
             }
         }
