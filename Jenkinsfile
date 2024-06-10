@@ -37,7 +37,7 @@ pipeline {
 	K8S_EC2_MASTER ='3.82.192.23'
     }
 
-   
+    stages {
         stage('Git checkout Stage') {
             steps {
                 git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
