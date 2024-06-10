@@ -18,6 +18,7 @@ spec:
       containers:
         - name: cart
           image: malekhassine/ecomm-cart_test
+          imagePullPolicy: Always
           ports:
             - containerPort: 8082
           envFrom:

@@ -17,7 +17,8 @@ spec:
     spec:
       containers:
         - name: front
-          image: malekhassine/ecomm-ui_dev
+          image: malekhassine/ecomm-ui_test
+          imagePullPolicy: Always
           ports:
             - containerPort: 80
 

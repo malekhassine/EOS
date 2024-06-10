@@ -18,6 +18,7 @@ spec:
       containers:
         - name: web
           image: malekhassine/ecomm-web_test
+          imagePullPolicy: Always
           ports:
             - containerPort: 8080
           envFrom:

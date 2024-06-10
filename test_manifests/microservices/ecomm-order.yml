@@ -18,6 +18,7 @@ spec:
       containers:
         - name: order
           image: malekhassine/ecomm-order_test
+          imagePullPolicy: Always
           ports:
             - containerPort: 8083
           envFrom:
