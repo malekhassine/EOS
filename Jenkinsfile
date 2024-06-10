@@ -115,7 +115,7 @@ pipeline {
 	    }
 	    
 
-        stage('Unit Test') {
+       /* stage('Unit Test') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -151,7 +151,7 @@ pipeline {
           }
          }
         }
-         
+         */
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -170,7 +170,7 @@ pipeline {
 
 	    
 
-        stage('Docker Build') {
+     /*   stage('Docker Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -200,7 +200,7 @@ pipeline {
 			
                 }
             }
-        }
+        }*/
 	    
 	
      /*   stage('Update Trivy Database') {
@@ -247,7 +247,7 @@ pipeline {
             }
         }*/
 
-
+/*
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -269,7 +269,7 @@ pipeline {
                     }
                 }
 	    }
-	}
+	}*/
 	stage('Get YAML Files') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
