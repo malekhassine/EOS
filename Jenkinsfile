@@ -36,20 +36,7 @@ pipeline {
 	K8S_EC2_USER= 'ubuntu'
 	K8S_EC2_MASTER ='3.82.192.23'
     }
-stages {
-        stage('Clean Old Workspaces') {
-            steps {
-                script {
-                    def workspaceDir = new File('/var/jenkins_home/workspace')
-                    workspaceDir.eachDir { dir ->
-                        if (dir.name.startsWith('ecom_') || dir.name.startsWith('sofia_')) {
-                            dir.deleteDir()
-                            echo "Deleted directory: ${dir.name}"
-                        }
-                    }
-                }
-            }
-        }
+
    
         stage('Git checkout Stage') {
             steps {
