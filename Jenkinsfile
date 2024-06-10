@@ -305,7 +305,7 @@ pipeline {
     }
 }
 	
-post {
+/* post {
   // Success notification
   success {
     script {
@@ -319,7 +319,7 @@ post {
     }
   }
 }
-
+*/
 
 
 
