@@ -38,6 +38,11 @@ pipeline {
     }
 
     stages {
+	    stage('Clean Workspace') {
+            steps {
+                deleteDir() // Clean the entire workspace directory
+            }
+        }
         stage('Git checkout Stage') {
             steps {
                 git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS'
@@ -61,6 +66,7 @@ pipeline {
                 }
             }
         }
+	    
 
       
 
@@ -80,6 +86,27 @@ pipeline {
                 }
             }
         }
+	     stage('Build front ecomm-ui') { 
+             when { 
+                 expression { 
+                    expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+                 } 
+             } 
+            steps {
+                script {
+		      for (def service in frontendservice) {
+                        dir(service) {
+				echo "Build directory: ${pwd()}"
+				sh "npm ci"
+  				sh 'CI=false npm run build --configuration=production ' 
+				sh 'ls -la'
+                  		echo 'Build stage done' }
+
+				
+             } 
+         }
+	    }
+	    }
 	    
 
         stage('Unit Test') {
@@ -141,27 +168,7 @@ pipeline {
              } 
          }}
 	    }
-	    stage('Build front ecomm-ui') { 
-             when { 
-                 expression { 
-                    expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-                 } 
-             } 
-            steps {
-                script {
-		      for (def service in frontendservice) {
-                        dir(service) {
-				echo "Build directory: ${pwd()}"
-				sh "npm ci"
-  				sh 'CI=false npm run build --configuration=production ' 
-				sh 'ls -la'
-                  		echo 'Build stage done' }
-
-				
-             } 
-         }
-	    }
-	    }
+	   
 
 
 	    
