@@ -9,14 +9,14 @@ spec:
   replicas: 1
   selector:
     matchLabels:
-      app: user
+      app: web
   template:
     metadata:
       labels:
-        app: user
+        app: web
     spec:
       containers:
-        - name: user
+        - name: web
           image: malekhassine/ecomm-web_test
           imagePullPolicy: Always
           ports:
@@ -29,12 +29,12 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: user
+  name: web
   namespace: test
 spec:
   type: ClusterIP
   selector:
-    app: user
+    app: web
   ports:
     - port: 8080
       targetPort: 8080
