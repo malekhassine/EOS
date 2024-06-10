@@ -1,0 +1,80 @@
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: gateway
+  namespace: test
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/ssl-redirect: "false"
+    #nginx.ingress.kubernetes.io/rewrite-target: /
+spec:
+  rules:
+    - http:
+      paths:
+        - path: /api/web/**
+          backend:
+            service:
+              name: web
+              port:
+                number: 8080
+        - path: /api/address/**
+          backend:
+            service:
+              name: web
+              port:
+                number: 8080
+        - path: /api/product/**
+          backend:
+            service:
+              name: product
+              port:
+                number: 8081
+        - path: /api/admin/**
+          backend:
+            service:
+              name: product
+              port:
+                number: 8081
+        - path: /api/category/**
+          backend:
+            service:
+              name: product
+              port:
+                number: 8081
+        - path: /api/admin/web/**
+          backend:
+            service:
+              name: web
+              port:
+                number: 8080
+        - path: /api/inventory/**
+          backend:
+            service:
+              name: product
+              port:
+                number: 8081
+        - path: /api/brand/**
+          backend:
+            service:
+              name: product
+              port:
+                number: 8081
+        - path: /api/cart/**
+          backend:
+            service:
+              name: cart
+              port:
+                number: 8082
+        - path: /api/order/**
+          backend:
+            service:
+              name: order
+              port:
+                number: 8083
+        - path: /api/stripe/**
+          backend:
+            service:
+              name: order
+              port:
+                number: 8083
