@@ -81,6 +81,17 @@ pipeline {
                 }
             }
         }
+
+	    stage('Install Npm') { 
+            steps {
+                script {
+		      for (def service in frontendservice) {
+                        dir(service) {
+                  sh 'npm install --legacy-peer-deps' }
+             } 
+         }}
+	    }
+	   
 	     stage('Build front ecomm-ui') { 
              when { 
                  expression { 
@@ -154,16 +165,7 @@ pipeline {
                 }
             }
         }
-	    stage('Install Npm') { 
-            steps {
-                script {
-		      for (def service in frontendservice) {
-                        dir(service) {
-                  sh 'npm install --legacy-peer-deps' }
-             } 
-         }}
-	    }
-	   
+	    
 
 
 	    
