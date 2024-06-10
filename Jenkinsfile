@@ -204,8 +204,8 @@ pipeline {
                 }
             }
         }
-	    }
-	}
+	    
+	
      /*   stage('Update Trivy Database') {
             steps {
                 script {
