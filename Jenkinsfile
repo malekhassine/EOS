@@ -253,7 +253,7 @@ pipeline {
             steps {
                 script {
                     // Push each Docker image to Docker Hub based on the branch
-                    for (def service in microservices) {
+                    for (def service in services) {
                         if (env.BRANCH_NAME == 'test') {
                             sh "docker push ${DOCKERHUB_USERNAME}/${service}_test:latest"
                             sh "docker rmi ${DOCKERHUB_USERNAME}/${service}_test:latest"
@@ -284,21 +284,7 @@ pipeline {
                 }
             }
         }
-	stage('Scan YAML Files') {
-            when {
-                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                    script {
-                        sh "ssh $MASTER_NODE rm -f kubescape_infrastructure_${deployenv}.txt"
-                        sh "ssh $MASTER_NODE rm -f kubescape_microservices_${deployenv}.txt"
-                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/infrastructure/*.yml > kubescape_infrastructure_${deployenv}.txt'"
-                        sh "ssh $MASTER_NODE 'kubescape scan ${deployenv}_manifests/microservices/*.yml > kubescape_microservices_${deployenv}.txt'"
-                    }
-                }
-            }
-        }
+	
        stage('Deploy to Kubernetes') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
