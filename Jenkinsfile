@@ -268,8 +268,8 @@ pipeline {
             }
             steps {
                 sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
-                    sh "ssh $MASTER_NODE 'kubescape scan framework mitre -v > kubescape_mitre_${env.BRANCH_NAME}.txt'"
-                    sh "ssh $MASTER_NODE cat kubescape_mitre_${env.BRANCH_NAME}.txt"
+                    sh "ssh $REMOTE_USER@$REMOTE_HOST 'kubescape scan framework mitre -v > kubescape_mitre_${env.BRANCH_NAME}.txt'"
+                    sh "ssh $REMOTE_USER@$REMOTE_HOST cat kubescape_mitre_${env.BRANCH_NAME}.txt"
                 }
             }
         }
