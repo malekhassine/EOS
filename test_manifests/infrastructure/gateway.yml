@@ -1,3 +1,4 @@
+
 ---
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -12,16 +13,16 @@ spec:
   rules:
     - http:
       paths:
-        - path: /api/web/**
+        - path: /api/user/**
           backend:
             service:
-              name: web
+              name: user
               port:
                 number: 8080
         - path: /api/address/**
           backend:
             service:
-              name: web
+              name: user
               port:
                 number: 8080
         - path: /api/product/**
@@ -42,10 +43,10 @@ spec:
               name: product
               port:
                 number: 8081
-        - path: /api/admin/web/**
+        - path: /api/admin/user/**
           backend:
             service:
-              name: web
+              name: user
               port:
                 number: 8080
         - path: /api/inventory/**
