@@ -105,7 +105,7 @@ pipeline {
 	    }
 	    }
 	    
-       /* stage('Unit Test') {
+     stage('Unit Test') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -140,7 +140,7 @@ pipeline {
           }
          }
         }
-         */
+         
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -156,7 +156,7 @@ pipeline {
         }
 	    
 	    
-     /*   stage('Docker Build') {
+       stage('Docker Build') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -177,10 +177,10 @@ pipeline {
 			
                 }
             }
-        }  */
+        }  
 	    
 	
-     /*   stage('Update Trivy Database') {
+        stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -218,8 +218,8 @@ pipeline {
                     }
                 }
             }
-        }*/
-/*
+        }
+
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -242,7 +242,7 @@ pipeline {
                 }
 	    }
 	} 
-	    */
+	    
 
 	 stage('Kube-bench Scan') {
             when {
@@ -327,7 +327,7 @@ pipeline {
     }
 }
 	
-/* post {
+post {
   // Success notification
   success {
     script {
@@ -341,4 +341,4 @@ pipeline {
     }
   }
 }
-*/
+
