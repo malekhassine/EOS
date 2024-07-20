@@ -331,6 +331,7 @@ pipeline {
             // Archive the Dependency Check reports
             archiveArtifacts artifacts: '**/dependency-check-report.html', allowEmptyArchive: true
         }
+ }
 	
 post {
   // Success notification
