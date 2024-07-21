@@ -135,6 +135,8 @@ pipeline {
                             sh 'mvn sonar:sonar'
                           }
                            dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
+			   archiveArtifacts artifacts: 'dependency-check-report.html', allowEmptyArchive: true
+
              }
            }
           }
@@ -328,10 +330,15 @@ pipeline {
 }
  post {
         always {
-            // Archive the Dependency Check reports
-            archiveArtifacts artifacts: '**/dependency-check-report.html', allowEmptyArchive: true
-        }
- }
+            // Publish the report in a user-friendly format
+            publishHTML(target: [
+                reportDir: '',
+                reportFiles: 'dependency-check-report.html',
+                reportName: 'Dependency Check Report',
+                keepAll: true
+            ])
+        
+	}}
 	
 post {
   // Success notification
