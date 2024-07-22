@@ -215,6 +215,11 @@ pipeline {
                             --timeout ${TIMEOUT_VALUE} \
                             ${imageTag} > ${trivyReportFile}
                         """
+		      sh """
+                            echo "<html><body><pre>" > ${trivyHtmlReportFile}
+                            cat ${trivyReportFile} >> ${trivyHtmlReportFile}
+                            echo "</pre></body></html>" >> ${trivyHtmlReportFile}
+                        """
                         // Archive Trivy reports for all microservices in a dedicated directory
                         archiveArtifacts artifacts: trivyReportFile, allowEmptyArchive: true
                     }
@@ -330,6 +335,22 @@ pipeline {
 }
  post {
         always {
+            script {
+                if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
+                    // Publish Trivy HTML reports
+                    publishHTML(target: [
+                        reportName: 'Trivy Vulnerability Reports',
+                        reportDir: 'trivy-html-reports',
+                        reportFiles: '*.html',
+                        keepAll: true,
+                        alwaysLinkToLastBuild: true,
+                        allowMissing: false
+                    ])
+                }
+            }
+        }
+ post {
+        always {
             // Publish the report in a user-friendly format
             publishHTML(target: [
                 reportDir: '',
@@ -354,4 +375,5 @@ post {
     }
   }
 }
+
 
