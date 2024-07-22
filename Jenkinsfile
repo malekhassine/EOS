@@ -192,7 +192,7 @@ pipeline {
                 }
             }
         }
-         stage('Trivy Image Scan') {
+        stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -216,11 +216,6 @@ pipeline {
                             aquasec/trivy image --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
                             --timeout ${TIMEOUT_VALUE} \
                             ${imageTag} > ${trivyReportFile}
-                        """
-		      sh """
-                            echo "<html><body><pre>" > ${trivyHtmlReportFile}
-                            cat ${trivyReportFile} >> ${trivyHtmlReportFile}
-                            echo "</pre></body></html>" >> ${trivyHtmlReportFile}
                         """
                         // Archive Trivy reports for all microservices in a dedicated directory
                         archiveArtifacts artifacts: trivyReportFile, allowEmptyArchive: true
