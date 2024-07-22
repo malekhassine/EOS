@@ -39,7 +39,7 @@ pipeline {
             }
         }
        
-        /*stage('Check Git Secrets') {
+        stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -55,39 +55,8 @@ pipeline {
                     }
                 }
             }
-        }*/
-	    
-        stage('Check Git Secrets') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    
-                    // Check each microservice for secrets
-                    for (def service in microservices) {
-                        dir(service) {
-                            // Run TruffleHog to check for secrets in the repository
-                            def trufflehogJsonFile = "trufflehog-${service}.json"
-                            def trufflehogHtmlReportFile = "trufflehog-html-reports/trufflehog-${service}.html"
-                            sh """
-                                docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > ${trufflehogJsonFile}
-                            """
-
-                            // Convert TruffleHog JSON output to HTML
-                            sh """
-                                echo "<html><body><pre>" > ${trufflehogHtmlReportFile}
-                                cat ${trufflehogJsonFile} >> ${trufflehogHtmlReportFile}
-                                echo "</pre></body></html>" >> ${trufflehogHtmlReportFile}
-                            """
-
-                            // Archive TruffleHog JSON reports for all microservices
-                            archiveArtifacts artifacts: trufflehogJsonFile, allowEmptyArchive: true
-                        }
-                    }
-                }
-            }
         }
+	
     
 	    
       
@@ -366,23 +335,7 @@ pipeline {
         }
     }
 }
-post {
-        always {
-            script {
-                if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
-                    // Publish TruffleHog HTML reports
-                    publishHTML(target: [
-                        reportName: 'TruffleHog Secret Scan Reports',
-                        reportDir: 'trufflehog-html-reports',
-                        reportFiles: '*.html',
-                        keepAll: true,
-                        alwaysLinkToLastBuild: true,
-                        allowMissing: false
-                    ])
-                }
-            }
-        }
-    }
+
 
  post {
         always {
