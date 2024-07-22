@@ -63,9 +63,7 @@ pipeline {
             }
             steps {
                 script {
-                    // Ensure we have the necessary directory for HTML reports
-                    sh 'mkdir -p trufflehog-html-reports'
-
+                    
                     // Check each microservice for secrets
                     for (def service in microservices) {
                         dir(service) {
