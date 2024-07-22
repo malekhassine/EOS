@@ -402,6 +402,7 @@ post {
                 }
             }
         }
+ }
  post {
         always {
             // Publish the report in a user-friendly format
@@ -428,5 +429,6 @@ post {
     }
   }
 }
+ 
 
 
