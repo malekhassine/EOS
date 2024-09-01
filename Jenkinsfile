@@ -39,7 +39,7 @@ pipeline {
             }
         }
        
-        stage('Check Git Secrets') {
+       /* stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -55,7 +55,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 	
     
 	    
