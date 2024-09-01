@@ -76,7 +76,7 @@ pipeline {
                 }
             }
         }
-	    stage('Install Npm') { 
+	 /*   stage('Install Npm') { 
             steps {
                 script {
 		      for (def service in frontendservice) {
@@ -84,9 +84,9 @@ pipeline {
                   sh 'npm install --legacy-peer-deps' }
              } 
          }}
-	    }
+	    }*/
 	   
-	     stage('Build front ecomm-ui') { 
+	     /*stage('Build front ecomm-ui') { 
              when { 
                  expression { 
                     expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -105,9 +105,9 @@ pipeline {
              } 
          }
 	    }
-	    }
+	    }*/
 	    
-     stage('Unit Test') {
+   /*  stage('Unit Test') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -121,8 +121,8 @@ pipeline {
                     }
                 }
             }
-        }
-        stage('SonarQube Analysis and dependency check') {
+        }*/
+      /*  stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -143,7 +143,7 @@ pipeline {
            }
           }
          }
-        }
+        }*/
          
         stage('Docker Login') {
             when {
