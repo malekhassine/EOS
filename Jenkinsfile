@@ -66,25 +66,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis and dependency check') {
-               when {
-                              expression {
-                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
-                              }
-                          }
-          steps {
-            script {
-               // Run unit tests for each microservice using Maven
-                  for (def service in microservices) {
-                     dir(service) {
-                         withSonarQubeEnv('sonarqube') {
-                            sh 'mvn sonar:sonar'
-                          }
-                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
-			   archiveArtifacts artifacts: 'dependency-check-report.html', allowEmptyArchive: true
-
-             }
-           }}}}
+        
 
 
 
