@@ -71,7 +71,9 @@ pipeline {
 
 
         stage('Docker Login') {
-            
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
             steps {
                 script {
                     // Log into Docker Hub using Jenkins credentials
@@ -81,6 +83,7 @@ pipeline {
                 }
             }
         }
+	    
 
         stage('Docker Build') {
             
