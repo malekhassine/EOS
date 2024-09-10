@@ -66,21 +66,25 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis') {
-          
-            steps {
-                script {
-                    // Perform static analysis with SonarQube for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            withSonarQubeEnv(credentialsId: 'sonar') {
-                               sh  "${SCANNER_HOME}/bin/sonar-scanner -Dsonar.projectName=${service} -Dsonar.projectKey=${service} -Dsonar.java.binaries=."
-                            }
-                        }
-                    }
-                }
-            }
-        }
+        stage('SonarQube Analysis and dependency check') {
+               when {
+                              expression {
+                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                              }
+                          }
+          steps {
+            script {
+               // Run unit tests for each microservice using Maven
+                  for (def service in microservices) {
+                     dir(service) {
+                         withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
+                          }
+                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
+			   archiveArtifacts artifacts: 'dependency-check-report.html', allowEmptyArchive: true
+
+             }
+           }}}}
 
 
 
