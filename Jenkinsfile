@@ -207,22 +207,40 @@ stage('SonarQube Analysis and dependency check') {
             }
         }
     }
+	    stage('Send reports to Slack') {
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
+                slackUploadFile filePath: '**/reports/*.html', initialComment: 'Check ODC Reports!!'
+                slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
+            }
+        }
     }
 	
 post {
   // Success notification
   success {
     script {
-      slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful!"
+      slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min !"
     }
   }
   // Failure notification
   failure {
     script {
-      slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' Build Failed!"
+      slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed  after 13min !"
     }
   }
 }
+	 post {
+        always {
+            script { 
+                if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master'))
+            archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+            }
+        }
+    }
 
 
 
