@@ -1,4 +1,12 @@
-def microservices = ['ecomm-cart']
+def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web']
+def frontendservice = ['ecomm-ui']  //front
+def services = microservices + frontendservice
+def deployenv = ''
+if (env.BRANCH_NAME == 'test') {
+    deployenv = 'test'
+} else if (env.BRANCH_NAME == 'master') {
+    deployenv = 'prod'
+}
 
 def COLOR_MAP = [
 	'FAILURE' : 'danger',
