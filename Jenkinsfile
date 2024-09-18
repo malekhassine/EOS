@@ -136,6 +136,14 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
+	    stage('Update Trivy Database') {
+            steps {
+                script {
+                    // Update the Trivy database
+                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
+                }
+            }
+        }
 
   stage('Trivy Image Scan') {
             when {
