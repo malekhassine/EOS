@@ -173,7 +173,7 @@ pipeline {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
                          // Archive Trivy reports for all microservices in a dedicated directory
-                        archiveArtifacts "**/*.txt"
+                        //archiveArtifacts "**/*.txt"
                     }
                 }
             }
