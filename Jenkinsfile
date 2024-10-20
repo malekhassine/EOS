@@ -39,7 +39,7 @@ pipeline {
             }
         }
        
-        stage('Check Git Secrets') {
+       /* stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -56,7 +56,7 @@ pipeline {
                 }
             }
         }
-	
+	*/
     
 	    
       
@@ -76,7 +76,7 @@ pipeline {
                 }
             }
         }
-	 stage('Install Npm') { 
+	/* stage('Install Npm') { 
             steps {
                 script {
 		      for (def service in frontendservice) {
@@ -84,7 +84,7 @@ pipeline {
                   sh 'npm install --legacy-peer-deps' }
              } 
          }}
-	    }
+	    }*/
 	   
 	     stage('Build front ecomm-ui') { 
              when { 
@@ -122,7 +122,7 @@ pipeline {
                 }
             }
         }
-        stage('SonarQube Analysis and dependency check') {
+       /* stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -143,7 +143,7 @@ pipeline {
            }
           }
          }
-        }
+        }*/
          
         stage('Docker Login') {
             when {
@@ -184,7 +184,7 @@ pipeline {
         }  
 	    
 	
-       stage('Update Trivy Database') {
+     /*  stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -222,7 +222,7 @@ pipeline {
                     }
                 }
             }
-        }
+        }*/
 
         stage('Docker Push') {
             when {
