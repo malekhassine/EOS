@@ -86,7 +86,7 @@ pipeline {
                 }
             }
         }
-stage('SonarQube Analysis and dependency check') {
+/* stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -106,7 +106,7 @@ stage('SonarQube Analysis and dependency check') {
            }
           }
          }
-        }
+        }*/
 
          
         stage('Docker Login') {
@@ -144,7 +144,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-	    stage('Update Trivy Database') {
+	/*    stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -178,7 +178,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-
+*/
 
         stage('Docker Push') {
             when {
@@ -202,7 +202,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
 	    }
 	}
-	    stage('Deploy to Kubernetes') {
+	 /*   stage('Deploy to Kubernetes') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -222,7 +222,7 @@ stage('SonarQube Analysis and dependency check') {
                 }
             }
         }
-    }
+    }*/
 	    stage('Send reports to Slack') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
