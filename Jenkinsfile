@@ -372,18 +372,27 @@ pipeline {
 	}}
 	
 post {
-  // Success notification
-  success {
-    script {
-      slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful!"
+    // Success notification
+    success {
+        script {
+            slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min!"
+        }
     }
-  }
-  // Failure notification
-  failure {
-    script {
-      slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' Build Failed!"
+    // Failure notification
+    failure {
+        script {
+            slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed after 13min!"
+        }
     }
-  }
+    // Always run
+    always {
+        script {
+            if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
+                archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+            }
+        }
+    }
+}
 }
  
 
