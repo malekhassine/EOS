@@ -15,14 +15,14 @@ spec:
             pathType: Prefix
             backend:
               service:
-                name: user
+                name: front
                 port:
                   number: 8080
           - path: /api/address
             pathType: Prefix
             backend:
               service:
-                name: user
+                name: front
                 port:
                   number: 8080
           - path: /api/product
