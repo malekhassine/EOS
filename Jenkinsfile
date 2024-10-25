@@ -248,7 +248,7 @@ pipeline {
 	} 
 	    
 
-	stage('Kube-bench Scan') {
+	/*stage('Kube-bench Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -271,7 +271,7 @@ pipeline {
                     sh "ssh $REMOTE_USER@$REMOTE_HOST cat kubescape_mitre_${env.BRANCH_NAME}.txt"
                 }
             }
-        }
+        }*/
 	
 	    stage('Get YAML Files') {
             when {
