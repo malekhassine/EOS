@@ -96,22 +96,23 @@ pipeline {
         }
     }
 }*/
-	  stage('Install jq') {
-            steps {
-                script {
-                    // Update package lists and install jq (for Debian-based systems)
-                    sh '''
-                        if ! command -v jq &> /dev/null; then
-                            echo "jq not found, installing..."
-                            sudo apt-get update
-                            sudo apt-get install -y jq
-                        else
-                            echo "jq is already installed."
-                        fi
-                    '''
-                }
-            }
+stage('Install jq') {
+    steps {
+        script {
+            // Update package lists and install jq (for Debian-based systems)
+            sh '''
+                if ! command -v jq &> /dev/null; then
+                    echo "jq not found, installing..."
+                    sudo apt-get update
+                    sudo apt-get install -y jq
+                else
+                    echo "jq is already installed."
+                fi
+            '''
         }
+    }
+}
+
 stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
