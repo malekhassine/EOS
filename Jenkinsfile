@@ -115,6 +115,7 @@ pipeline {
                     
                     // Output the readable report
                     sh 'cat trufflehog_readable_report.md'
+		  archiveArtifacts artifacts: 'trufflehog.json, trufflehog_readable_report.md', allowEmptyArchive: true
                 }
             }
         }
