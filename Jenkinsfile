@@ -83,7 +83,7 @@ pipeline {
                     if (truffleHogOutput.trim()) {
                         echo "Secrets found in ${service}, generating report."
                         // Parse the JSON and generate a readable Markdown report
-                        def reportContent = sh(script: "echo '${truffleHogOutput}' | jq -r '.[] | \"File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(\", \"))\"'", returnStdout: true)
+                        def reportContent = sh(script: "echo '${truffleHogOutput}' | jq -r '.[] | \"File: /(.path)/nCommit: /(.commit)/nStrings found: /(.stringsFound | join(\", \"))\"'", returnStdout: true)
                         writeFile file: 'trufflehog_readable_report.md', text: reportContent
                     } else {
                         echo "No secrets found in ${service}."
