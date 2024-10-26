@@ -126,7 +126,7 @@ stage('Check Git Secrets') {
                 echo "Secrets found, generating readable report."
                 // Convert the raw output to a readable Markdown report
                 sh '''
-                    cat trufflehog.txt | jq -r '.results[] | "File: \(.path)\\nCommit: \(.commit)\\nStrings found: \(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
+                    cat trufflehog.txt | jq -r '.results[] | "File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(", "))\n"' > trufflehog_readable_report.md
                 '''
             } else {
                 echo "trufflehog.txt is empty, no secrets found."
