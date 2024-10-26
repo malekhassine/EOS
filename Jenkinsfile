@@ -192,8 +192,8 @@ pipeline {
     }
     steps {
         script {
-            // List of microservices to scan
-            def microservices = ['service1', 'service2', 'service3'] // Replace with your service names
+       
+           
             def reportsDir = "trivy-reports" // Directory to store reports
             sh "mkdir -p ${reportsDir}" // Create reports directory
 
