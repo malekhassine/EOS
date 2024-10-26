@@ -97,50 +97,45 @@ pipeline {
     }
 }*/
 stage('Install jq') {
-    steps {
-        script {
-            // Update package lists and install jq (for Debian-based systems)
-            sh '''
-                if ! command -v jq &> /dev/null; then
-                    echo "jq not found, installing..."
-                    sudo apt-get update
-                    sudo apt-get install -y jq
-                else
-                    echo "jq is already installed."
-                fi
-            '''
-        }
-    }
-}
-
-stage('Check Git Secrets') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-        script {
-            // Run TruffleHog to check for secrets in the repository
-            sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/malekhassine/EOS.git > trufflehog.txt'
-            
-            // Check if the trufflehog.txt file is empty
-            if (new File('trufflehog.txt').length() > 0) {
-                echo "Secrets found, generating readable report."
-                // Convert the raw output to a readable Markdown report
-                sh '''
-                    cat trufflehog.txt | jq -r '.results[] | "File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(", "))\n"' > trufflehog_readable_report.md
-                '''
-            } else {
-                echo "trufflehog.txt is empty, no secrets found."
+            steps {
+                script {
+                    // Update package lists and install jq (for Debian-based systems)
+                    sh '''
+                        if ! command -v jq &> /dev/null; then
+                            echo "jq not found, installing..."
+                            sudo apt-get update
+                            sudo apt-get install -y jq
+                        else
+                            echo "jq is already installed."
+                        fi
+                    '''
+                }
             }
-            
-            // Archive both the raw output and the readable report
-            archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
         }
-    }
-}
 
-
-
+        stage('Check Git Secrets') {
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                script {
+                    // Run TruffleHog to check for secrets in the repository
+                    sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/malekhassine/EOS.git > trufflehog.txt'
+                    
+                    // Check if the trufflehog.txt file is empty
+                    if (new File('trufflehog.txt').length() > 0) {
+                        echo "Secrets found, generating readable report."
+                        // Convert the raw output to a readable Markdown report
+                        sh '''
+                            cat trufflehog.txt | jq -r '.results[] | "File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(", "))\n"' > trufflehog_readable_report.md
+                        '''
+                    } else {
+                        echo "trufflehog.txt is empty, no secrets found."
+                    }
+                    
+                    // Archive both the raw output and the readable report
+                    archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
+                }
 
 	
     
