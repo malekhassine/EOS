@@ -39,7 +39,7 @@ pipeline {
             }
         }
        
-       /*  stage('Check Git Secrets') {
+         stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -49,53 +49,14 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             // Run TruffleHog to check for secrets in the repository
-                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
-                            sh 'cat trufflehog.json' // Output the results
-			  archiveArtifacts artifacts: 'trufflehog.json', allowEmptyArchive: true
+                            sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.txt'
+                            sh 'cat trufflehog.txt' // Output the results
+			  archiveArtifacts artifacts: 'trufflehog.txt', allowEmptyArchive: true
                         }
                     }
                 }
             }
         }
-*/stage('Check Git Secrets') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-        script {
-            // Install jq if it's not already installed
-            sh '''
-                if ! command -v jq &> /dev/null; then
-                    echo "jq not found, installing..."
-                    apt-get update
-                    apt-get install -y jq
-                else
-                    echo "jq is already installed."
-                fi
-            '''
-
-            // Check each microservice for secrets
-            for (def service in microservices) {
-                dir(service) {
-                    // Run TruffleHog and capture the output directly
-                    def truffleHogOutput = sh(script: 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git', returnStdout: true)
-                    
-                    if (truffleHogOutput.trim()) {
-                        echo "Secrets found in ${service}, generating report."
-                        // Parse the JSON and generate a readable Markdown report
-                        def reportContent = sh(script: "echo '${truffleHogOutput}' | jq -r '.[] | \"File: /(.path)/nCommit: /(.commit)/nStrings found: /(.stringsFound | join(\", \"))\"'", returnStdout: true)
-                        writeFile file: 'trufflehog_readable_report.md', text: reportContent
-                    } else {
-                        echo "No secrets found in ${service}."
-                    }
-                    
-                    // Archive both the raw output and the readable report
-                    archiveArtifacts artifacts: 'trufflehog_readable_report.md', allowEmptyArchive: true
-                }
-            }
-        }
-    }
-}
 
 /*	    stage('Check Git Secrets') {
     when {
