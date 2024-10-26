@@ -96,33 +96,48 @@ pipeline {
         }
     }
 }*/
-	   stage('Check Git Secrets') {
+	  stage('Install jq') {
+            steps {
+                script {
+                    // Update package lists and install jq (for Debian-based systems)
+                    sh '''
+                        if ! command -v jq &> /dev/null; then
+                            echo "jq not found, installing..."
+                            sudo apt-get update
+                            sudo apt-get install -y jq
+                        else
+                            echo "jq is already installed."
+                        fi
+                    '''
+                }
+            }
+        }
+stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
         script {
-            // Check each microservice for secrets
-            for (def service in microservices) {
-                dir(service) {
-                    // Run TruffleHog to check for secrets in the repository
-                    sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
-                    
-                    // Convert the JSON report to a readable format (Markdown) using a Docker container with jq
-                    sh '''
-                        docker run --rm -v "$PWD:/data" imega/jq jq -r '.results[] | "File: \\(.path)\\nCommit: \\(.commit)\\nStrings found: \\(.stringsFound | join(", "))\\n"' /data/trufflehog.json > trufflehog_readable_report.md
-                    '''
-                    
-                    // Output the readable report
-                    sh 'cat trufflehog_readable_report.md'
-                    
-                    // Archive both the JSON and the Markdown reports
-                    archiveArtifacts artifacts: 'trufflehog.json, trufflehog_readable_report.md', allowEmptyArchive: true
-                }
+            // Run TruffleHog to check for secrets in the repository
+            sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/malekhassine/EOS.git > trufflehog.txt'
+            
+            // Check if the trufflehog.txt file is empty
+            if (new File('trufflehog.txt').length() > 0) {
+                echo "Secrets found, generating readable report."
+                // Convert the raw output to a readable Markdown report
+                sh '''
+                    cat trufflehog.txt | jq -r '.results[] | "File: \(.path)\\nCommit: \(.commit)\\nStrings found: \(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
+                '''
+            } else {
+                echo "trufflehog.txt is empty, no secrets found."
             }
+            
+            // Archive both the raw output and the readable report
+            archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
         }
     }
 }
+
 
 
 
