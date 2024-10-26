@@ -96,7 +96,7 @@ pipeline {
         }
     }
 }*/
-	    stage('Check Git Secrets') {
+	   stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -108,19 +108,22 @@ pipeline {
                     // Run TruffleHog to check for secrets in the repository
                     sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
                     
-                    // Convert the JSON report to a readable format (Markdown or HTML)
+                    // Convert the JSON report to a readable format (Markdown)
                     sh '''
-                        cat trufflehog.json | jq -r '.results[] | "File: \(.path)\\nCommit: \(.commit)\\nStrings found: \(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
+                        cat trufflehog.json | jq -r '.results[] | "File: \\(.path)\\nCommit: \\(.commit)\\nStrings found: \\(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
                     '''
                     
                     // Output the readable report
                     sh 'cat trufflehog_readable_report.md'
-		  archiveArtifacts artifacts: 'trufflehog.json, trufflehog_readable_report.md', allowEmptyArchive: true
+                    
+                    // Archive both the JSON and the Markdown reports
+                    archiveArtifacts artifacts: 'trufflehog.json, trufflehog_readable_report.md', allowEmptyArchive: true
                 }
             }
         }
     }
 }
+
 
 
 	
