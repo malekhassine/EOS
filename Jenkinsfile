@@ -192,14 +192,12 @@ pipeline {
     }
     steps {
         script {
-       
-           
             def reportsDir = "trivy-reports" // Directory to store reports
             sh "mkdir -p ${reportsDir}" // Create reports directory
 
             // Scan each Docker image for vulnerabilities using Trivy
-            for (def service in microservices) {
-                def trivyReportFile = "${reportsDir}/trivy-${service}.html"
+            for (def service in services) {
+                def trivyReportFile = "${reportsDir}/trivy-${service}.txt" // Use JSON format
                 def imageTag
 
                 // Determine the image tag based on the branch name
@@ -211,19 +209,19 @@ pipeline {
                     imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
                 }
 
-                // Run Trivy scan and generate HTML report
+                // Run Trivy scan and generate JSON report
                 try {
                     sh """
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
                         -v $PWD:/tmp/.cache/ \
-                        aquasec/trivy image --format html --output ${trivyReportFile} \
+                        aquasec/trivy image --format json --output ${trivyReportFile} \
                         --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
                         --timeout 15m \
                         ${imageTag}
                     """
-                    // Archive Trivy HTML reports
-                    archiveArtifacts artifacts: "${reportsDir}/trivy-${service}.html", allowEmptyArchive: true
+                    // Archive Trivy JSON reports
+                    archiveArtifacts artifacts: "${reportsDir}/trivy-${service}.txt", allowEmptyArchive: true
                 } catch (Exception e) {
                     // Handle errors during scanning
                     echo "Error scanning ${imageTag}: ${e.message}"
