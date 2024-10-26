@@ -57,8 +57,7 @@ pipeline {
                 }
             }
         }
-*/
-	   stage('Check Git Secrets') {
+*/stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -68,8 +67,8 @@ pipeline {
             sh '''
                 if ! command -v jq &> /dev/null; then
                     echo "jq not found, installing..."
-                    sudo apt-get update
-                    sudo apt-get install -y jq
+                    apt-get update
+                    apt-get install -y jq
                 else
                     echo "jq is already installed."
                 fi
@@ -86,7 +85,7 @@ pipeline {
                         echo "Secrets found in ${service}, generating report."
                         // Parse the JSON and generate a readable Markdown report
                         sh '''
-                            jq -r '.[] | "File: /(.path)//nCommit: /(.commit)//nStrings found: /(.stringsFound | join(", "))//n"' trufflehog.json > trufflehog_readable_report.md
+                            jq -r '.[] | "File: \(.path)/nCommit: \(.commit)/nStrings found: \(.stringsFound | join(", "))" ' trufflehog.json > trufflehog_readable_report.md
                         '''
                     } else {
                         echo "No secrets found in ${service}."
