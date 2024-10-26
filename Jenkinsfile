@@ -58,12 +58,23 @@ pipeline {
             }
         }
 */
-	    stage('Check Git Secrets') {
+	   stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
         script {
+            // Install jq if it's not already installed
+            sh '''
+                if ! command -v jq &> /dev/null; then
+                    echo "jq not found, installing..."
+                    sudo apt-get update
+                    sudo apt-get install -y jq
+                else
+                    echo "jq is already installed."
+                fi
+            '''
+            
             // Check each microservice for secrets
             for (def service in microservices) {
                 dir(service) {
@@ -75,7 +86,7 @@ pipeline {
                         echo "Secrets found in ${service}, generating report."
                         // Parse the JSON and generate a readable Markdown report
                         sh '''
-                            jq -r '.[] | "File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(", "))\n"' trufflehog.json > trufflehog_readable_report.md
+                            jq -r '.[] | "File: \(.path)\\nCommit: \(.commit)\\nStrings found: \(.stringsFound | join(", "))\\n"' trufflehog.json > trufflehog_readable_report.md
                         '''
                     } else {
                         echo "No secrets found in ${service}."
@@ -88,7 +99,6 @@ pipeline {
         }
     }
 }
-
 
 /*	    stage('Check Git Secrets') {
     when {
