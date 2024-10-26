@@ -73,26 +73,24 @@ pipeline {
                     echo "jq is already installed."
                 fi
             '''
-            
+
             // Check each microservice for secrets
             for (def service in microservices) {
                 dir(service) {
-                    // Run TruffleHog to check for secrets in the repository
-                    sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
+                    // Run TruffleHog and capture the output directly
+                    def truffleHogOutput = sh(script: 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git', returnStdout: true)
                     
-                    // Check if trufflehog.json has any results
-                    if (new File('trufflehog.json').length() > 0) {
+                    if (truffleHogOutput.trim()) {
                         echo "Secrets found in ${service}, generating report."
                         // Parse the JSON and generate a readable Markdown report
-                        sh '''
-                            jq -r '.[] | "File: /(.path)/nCommit: /(.commit)/nStrings found: /(.stringsFound | join(", "))" ' trufflehog.json > trufflehog_readable_report.md
-                        '''
+                        def reportContent = sh(script: "echo '${truffleHogOutput}' | jq -r '.[] | \"File: \(.path)\nCommit: \(.commit)\nStrings found: \(.stringsFound | join(\", \"))\"'", returnStdout: true)
+                        writeFile file: 'trufflehog_readable_report.md', text: reportContent
                     } else {
                         echo "No secrets found in ${service}."
                     }
                     
                     // Archive both the raw output and the readable report
-                    archiveArtifacts artifacts: 'trufflehog.json, trufflehog_readable_report.md', allowEmptyArchive: true
+                    archiveArtifacts artifacts: 'trufflehog_readable_report.md', allowEmptyArchive: true
                 }
             }
         }
