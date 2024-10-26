@@ -58,7 +58,7 @@ pipeline {
         }*/
 
 
-	    stage('Check Git Secrets') {
+/*	    stage('Check Git Secrets') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -95,7 +95,32 @@ pipeline {
             archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
         }
     }
+}*/
+	    stage('Check Git Secrets') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            // Check each microservice for secrets
+            for (def service in microservices) {
+                dir(service) {
+                    // Run TruffleHog to check for secrets in the repository
+                    sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
+                    
+                    // Convert the JSON report to a readable format (Markdown or HTML)
+                    sh '''
+                        cat trufflehog.json | jq -r '.results[] | "File: \(.path)\\nCommit: \(.commit)\\nStrings found: \(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
+                    '''
+                    
+                    // Output the readable report
+                    sh 'cat trufflehog_readable_report.md'
+                }
+            }
+        }
+    }
 }
+
 
 	
     
