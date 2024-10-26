@@ -108,9 +108,9 @@ pipeline {
                     // Run TruffleHog to check for secrets in the repository
                     sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.json'
                     
-                    // Convert the JSON report to a readable format (Markdown)
+                    // Convert the JSON report to a readable format (Markdown) using a Docker container with jq
                     sh '''
-                        cat trufflehog.json | jq -r '.results[] | "File: \\(.path)\\nCommit: \\(.commit)\\nStrings found: \\(.stringsFound | join(", "))\\n"' > trufflehog_readable_report.md
+                        docker run --rm -v "$PWD:/data" imega/jq jq -r '.results[] | "File: \\(.path)\\nCommit: \\(.commit)\\nStrings found: \\(.stringsFound | join(", "))\\n"' /data/trufflehog.json > trufflehog_readable_report.md
                     '''
                     
                     // Output the readable report
