@@ -85,7 +85,7 @@ pipeline {
                         echo "Secrets found in ${service}, generating report."
                         // Parse the JSON and generate a readable Markdown report
                         sh '''
-                            jq -r '.[] | "File: \(.path)/nCommit: \(.commit)/nStrings found: \(.stringsFound | join(", "))" ' trufflehog.json > trufflehog_readable_report.md
+                            jq -r '.[] | "File: /(.path)/nCommit: /(.commit)/nStrings found: /(.stringsFound | join(", "))" ' trufflehog.json > trufflehog_readable_report.md
                         '''
                     } else {
                         echo "No secrets found in ${service}."
