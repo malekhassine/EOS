@@ -58,44 +58,7 @@ pipeline {
             }
         }
 
-/*	    stage('Check Git Secrets') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-        script {
-            // Run TruffleHog to scan the repository
-            sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/malekhassine/EOS.git > trufflehog.txt'
-            
-            // Convert the TruffleHog output to a more readable Markdown report
-            sh '''
-                cat trufflehog.txt | awk '
-                BEGIN {
-                    print "# TruffleHog Secrets Scan Report\\n"
-                }
-                /Found/ {
-                    print "## " $0 "\\n"
-                }
-                /Reason:/ {
-                    print "**Reason:** " $0 "\\n"
-                }
-                /Commit:/ {
-                    print "**Commit:** " $0 "\\n"
-                }
-                /Strings found:/ {
-                    print "**Strings Found:** " $0 "\\n"
-                }
-                ' > trufflehog_readable_report.md
-            '''
-            
-            // Output the readable report to the console
-            sh 'cat trufflehog_readable_report.md'
-            
-            // Archive the original and readable reports
-            archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
-        }
-    }
-}*/
+
 
     
 	    
@@ -162,7 +125,7 @@ pipeline {
                 }
             }
         }
-       /* stage('SonarQube Analysis and dependency check') {
+       stage('SonarQube Analysis and dependency check') {
                when {
                               expression {
                                   (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
@@ -183,7 +146,7 @@ pipeline {
            }
           }
          }
-        }*/
+        }
          
         stage('Docker Login') {
             when {
@@ -221,10 +184,58 @@ pipeline {
 			
                 }
             }
-        }  
+        } 
+
+	    stage('Trivy Image Scan') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            // List of microservices to scan
+            def microservices = ['service1', 'service2', 'service3'] // Replace with your service names
+            def reportsDir = "trivy-reports" // Directory to store reports
+            sh "mkdir -p ${reportsDir}" // Create reports directory
+
+            // Scan each Docker image for vulnerabilities using Trivy
+            for (def service in microservices) {
+                def trivyReportFile = "${reportsDir}/trivy-${service}.html"
+                def imageTag
+
+                // Determine the image tag based on the branch name
+                if (env.BRANCH_NAME == 'test') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_test:latest"
+                } else if (env.BRANCH_NAME == 'master') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_prod:latest"
+                } else if (env.BRANCH_NAME == 'dev') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
+                }
+
+                // Run Trivy scan and generate HTML report
+                try {
+                    sh """
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v $PWD:/tmp/.cache/ \
+                        aquasec/trivy image --format html --output ${trivyReportFile} \
+                        --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
+                        --timeout 15m \
+                        ${imageTag}
+                    """
+                    // Archive Trivy HTML reports
+                    archiveArtifacts artifacts: "${reportsDir}/trivy-${service}.html", allowEmptyArchive: true
+                } catch (Exception e) {
+                    // Handle errors during scanning
+                    echo "Error scanning ${imageTag}: ${e.message}"
+                }
+            }
+        }
+    }
+}
+
 	    
 	
-     /*  stage('Update Trivy Database') {
+   /*    stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
