@@ -39,7 +39,7 @@ pipeline {
             }
         }
        
-       /* stage('Check Git Secrets') {
+        /* stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -55,8 +55,49 @@ pipeline {
                     }
                 }
             }
+        }*/
+
+
+	    stage('Check Git Secrets') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            // Run TruffleHog to scan the repository
+            sh 'docker run --rm -v "$PWD:/pwd" trufflesecurity/trufflehog:latest github --repo https://github.com/malekhassine/EOS.git > trufflehog.txt'
+            
+            // Convert the TruffleHog output to a more readable Markdown report
+            sh '''
+                cat trufflehog.txt | awk '
+                BEGIN {
+                    print "# TruffleHog Secrets Scan Report\\n"
+                }
+                /Found/ {
+                    print "## " $0 "\\n"
+                }
+                /Reason:/ {
+                    print "**Reason:** " $0 "\\n"
+                }
+                /Commit:/ {
+                    print "**Commit:** " $0 "\\n"
+                }
+                /Strings found:/ {
+                    print "**Strings Found:** " $0 "\\n"
+                }
+                ' > trufflehog_readable_report.md
+            '''
+            
+            // Output the readable report to the console
+            sh 'cat trufflehog_readable_report.md'
+            
+            // Archive the original and readable reports
+            archiveArtifacts artifacts: 'trufflehog.txt, trufflehog_readable_report.md', allowEmptyArchive: true
         }
-	*/
+    }
+}
+
+	
     
 	    
       
