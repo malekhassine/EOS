@@ -186,18 +186,21 @@ pipeline {
             }
         } 
 
-	    stage('Trivy Image Scan') {
+	   stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
         script {
             def reportsDir = "trivy-reports" // Directory to store reports
-            sh "mkdir -p ${reportsDir}" // Create reports directory
+            sh "mkdir -p ${reportsDir}" // Create reports directory if it doesn't exist
+
+            // List of microservices to scan
+            def services = ["ecomm-cart", "ecomm-order", "ecomm-product", "ecomm-web"]
 
             // Scan each Docker image for vulnerabilities using Trivy
             for (def service in services) {
-                def trivyReportFile = "${reportsDir}/trivy-${service}.txt" // Use JSON format
+                def trivyReportFile = "${reportsDir}/trivy-${service}.json" // Use JSON format for the report
                 def imageTag
 
                 // Determine the image tag based on the branch name
@@ -221,7 +224,7 @@ pipeline {
                         ${imageTag}
                     """
                     // Archive Trivy JSON reports
-                    archiveArtifacts artifacts: "${reportsDir}/trivy-${service}.txt", allowEmptyArchive: true
+                    archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
                 } catch (Exception e) {
                     // Handle errors during scanning
                     echo "Error scanning ${imageTag}: ${e.message}"
