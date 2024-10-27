@@ -262,7 +262,7 @@ pipeline {
                             docker run --rm \
                             -v /var/run/docker.sock:/var/run/docker.sock \
                             -v $PWD:/tmp/.cache/ \
-                            aquasec/trivy image --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
+                            aquasec/trivy image --scanners os,vuln --severity CRITICAL,HIGH,MEDIUM \
                             --timeout ${TIMEOUT_VALUE} \
                             ${imageTag} > ${trivyReportFile}
                         """
