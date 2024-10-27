@@ -195,9 +195,6 @@ pipeline {
             def reportsDir = "trivy-reports" // Directory to store reports
             sh "mkdir -p ${reportsDir}" // Create reports directory if it doesn't exist
 
-            // List of microservices to scan
-            def services = ["ecomm-cart", "ecomm-order", "ecomm-product", "ecomm-web"]
-
             // Scan each Docker image for vulnerabilities using Trivy
             for (def service in services) {
                 def trivyReportFile = "${reportsDir}/trivy-${service}.json" // Use JSON format for the report
