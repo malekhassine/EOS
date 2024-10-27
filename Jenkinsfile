@@ -186,7 +186,7 @@ pipeline {
             }
         } 
 
-	   stage('Trivy Image Scan') {
+/*	   stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -230,10 +230,10 @@ pipeline {
         }
     }
 }
-
+*/
 	    
 	
-   /*    stage('Update Trivy Database') {
+      stage('Update Trivy Database') {
             steps {
                 script {
                     // Update the Trivy database
@@ -271,7 +271,7 @@ pipeline {
                     }
                 }
             }
-        }*/
+        }
 
         stage('Docker Push') {
             when {
