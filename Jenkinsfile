@@ -186,7 +186,7 @@ pipeline {
             }
         } 
 
-	   stage('Trivy Image Scan') {
+	  /* stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -229,7 +229,54 @@ pipeline {
             }
         }
     }
+}*/
+
+	    stage('Trivy Image Scan') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            def reportsDir = "trivy-reports" // Directory to store reports
+            sh "mkdir -p ${reportsDir}" // Create reports directory if it doesn't exist
+
+            // Scan each Docker image for vulnerabilities using Trivy
+            for (def service in services) {
+                def trivyReportFile = "${reportsDir}/trivy-${service}.json" // Use JSON format for the report
+                def imageTag
+
+                // Determine the image tag based on the branch name
+                if (env.BRANCH_NAME == 'test') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_test:latest"
+                } else if (env.BRANCH_NAME == 'master') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_prod:latest"
+                } else if (env.BRANCH_NAME == 'dev') {
+                    imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
+                }
+
+                // Run Trivy scan and generate JSON report
+                try {
+                    sh """
+                        docker run --rm \
+                        -v /var/run/docker.sock:/var/run/docker.sock \
+                        -v ${WORKSPACE}/trivy/.cache:/root/.cache/ \
+                        aquasec/trivy image --format json --output ${trivyReportFile} \
+                        --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
+                        --timeout 15m \
+                        ${imageTag}
+                    """
+                    // Archive Trivy JSON reports
+                    archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
+                } catch (Exception e) {
+                    // Handle errors during scanning
+                    echo "Error scanning ${imageTag}: ${e.message}"
+                    currentBuild.result = 'UNSTABLE' // Mark build as unstable if scanning fails
+                }
+            }
+        }
+    }
 }
+
 
 	    
 	
