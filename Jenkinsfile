@@ -398,6 +398,27 @@ pipeline {
         }
     }
 }
+post {
+    success {
+        // Send notification to Slack on successful build with links to reports
+        slackSend(channel: '#jenkins_notification',
+                  message: "✅ Build Successful: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                           "Trivy Reports: ${env.BUILD_URL}artifact/trivy-reports/\n" +
+                           "Git Secrets Report: ${env.BUILD_URL}artifact/trufflehog.txt")
+    }
+    unstable {
+        // Notify if the build is marked as unstable
+        slackSend(channel: '#jenkins_notification',
+                  message: "⚠️ Build Unstable: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                           "Please review the reports for potential issues.")
+    }
+    failure {
+        // Send notification to Slack on build failure
+        slackSend(channel: '#jenkins_notification',
+                  message: "❌ Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                           "Please review the logs and reports for details.")
+    }
+}
 
 
  post {
@@ -433,13 +454,13 @@ post {
     // Success notification
     success {
         script {
-            slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min!"
+            slackSend channel: '#jenkins_notification', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min!"
         }
     }
     // Failure notification
     failure {
         script {
-            slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed after 13min!"
+            slackSend channel: '#jenkins_notification', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed after 13min!"
         }
     }
     // Always run
