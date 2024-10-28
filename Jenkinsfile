@@ -241,37 +241,30 @@ pipeline {
                 }
             }
         }*/
-        stage('Trivy Image Scan') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Scan each Docker image for vulnerabilities using Trivy
-                    for (def service : microservices) {
-                        def trivyReportFile = "trivy-${service}.txt"
-                        def imageTag
-                        if (env.BRANCH_NAME == 'test') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_test:latest"
-                        } else if (env.BRANCH_NAME == 'master') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_prod:latest"
-                        } else if (env.BRANCH_NAME == 'dev') {
-                            imageTag = "${DOCKERHUB_USERNAME}/${service}_dev:latest"
-                        }
-                        sh """
-                            docker run --rm \
-                            -v /var/run/docker.sock:/var/run/docker.sock \
-                            -v $PWD:/tmp/.cache/ \
-                            aquasec/trivy image vuln --severity CRITICAL,HIGH,MEDIUM \
-                            --timeout ${TIMEOUT_VALUE} \
-                            ${imageTag} > ${trivyReportFile}
-                        """
-                        // Archive Trivy reports for all microservices in a dedicated directory
-                        archiveArtifacts artifacts: trivyReportFile, allowEmptyArchive: true
-                    }
-                }
+       stage('Trivy Image Scan') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            for (def service in services) {
+                def trivyReportFile = "trivy-${service}.txt"
+                def imageTag = "${DOCKERHUB_USERNAME}/${service}_${env.BRANCH_NAME}:latest"
+
+                // Run Trivy container
+                sh """
+                    docker run --rm \
+                    -v /var/run/docker.sock:/var/run/docker.sock \
+                    -v $PWD:/tmp/.cache/ \
+                    aquasec/trivy image --scanners vuln \
+                    --severity CRITICAL,HIGH,MEDIUM \
+                    --timeout 15m \
+                    ${imageTag} > ${trivyReportFile}
+                """
             }
         }
+    }
+}
 
         stage('Docker Push') {
             when {
