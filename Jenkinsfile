@@ -280,35 +280,7 @@ pipeline {
 
 	    
 	
-    /*  stage('Update Trivy Database') {
-            steps {
-                script {
-                    // Update the Trivy database
-                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
-                }
-            }
-        }
-       stage('Trivy Image Scan') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-        script {
-            for (def service in services) {
-                def trivyReportFile = "trivy-${service}.txt"
-                def imageTag = "${DOCKERHUB_USERNAME}/${service}_${env.BRANCH_NAME}:latest"
-
-                // Run Trivy container
-                sh """
-                    docker run --rm \
-                    -v /var/run/docker.sock:/var/run/docker.sock \
-                    -v $PWD:/tmp/.cache/ \
-                    aquasec/trivy image --timeout 15m ${imageTag} > ${trivyReportFile}
-                """
-            }
-        }
-    }
-}*/
+    
 
         stage('Docker Push') {
             when {
@@ -334,7 +306,7 @@ pipeline {
 	} 
 	    
 
-	/*stage('Kube-bench Scan') {
+	stage('Kube-bench Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -357,7 +329,7 @@ pipeline {
                     sh "ssh $REMOTE_USER@$REMOTE_HOST cat kubescape_mitre_${env.BRANCH_NAME}.txt"
                 }
             }
-        }*/
+        }
 	
 	    stage('Get YAML Files') {
             when {
