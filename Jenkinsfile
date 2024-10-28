@@ -186,7 +186,7 @@ pipeline {
             }
         } 
 
-/*	   stage('Trivy Image Scan') {
+	   stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -230,7 +230,7 @@ pipeline {
         }
     }
 }
-*/
+
 	    
 	
     /*  stage('Update Trivy Database') {
@@ -240,7 +240,7 @@ pipeline {
                     sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
                 }
             }
-        }*/
+        }
        stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -261,7 +261,7 @@ pipeline {
             }
         }
     }
-}
+}*/
 
         stage('Docker Push') {
             when {
