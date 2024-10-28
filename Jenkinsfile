@@ -281,7 +281,7 @@ pipeline {
 	    
 	
     
-
+/*
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -386,7 +386,7 @@ pipeline {
                 }
             }
         }
-	    
+	    */
         stage('Send reports to Slack') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
