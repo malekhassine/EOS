@@ -276,6 +276,14 @@ pipeline {
         }
     }
 }*/
+	     stage('Update Trivy Database') {
+            steps {
+                script {
+                    // Update the Trivy database
+                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
+                }
+            }
+        }
 	     stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
