@@ -242,7 +242,7 @@ pipeline {
 
             // Scan each Docker image for vulnerabilities using Trivy
             for (def service in services) {
-                def trivyReportFile = "${reportsDir}/trivy-${service}.json" // Use JSON format for the report
+                def trivyReportFile = "${reportsDir}/trivy-${service}.txt" // Use JSON format for the report
                 def imageTag
 
                 // Determine the image tag based on the branch name
@@ -260,10 +260,10 @@ pipeline {
                         docker run --rm \
                         -v /var/run/docker.sock:/var/run/docker.sock \
                         -v ${WORKSPACE}/trivy/.cache:/root/.cache/ \
-                        aquasec/trivy image --format json --output ${trivyReportFile} \
+                        aquasec/trivy image \
                         --scanners vuln --severity CRITICAL,HIGH,MEDIUM \
-                        --timeout 15m \
-                        ${imageTag}
+                        --timeout 30m \
+                        ${imageTag} > ${trivyReportFile}
                     """
                     // Archive Trivy JSON reports
                     archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
@@ -275,40 +275,8 @@ pipeline {
             }
         }
     }
-}*/
-	     stage('Update Trivy Database') {
-            steps {
-                script {
-                    // Update the Trivy database
-                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
-                }
-            }
-        }
-	     stage('Trivy Image Scan') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Scan each Docker image for vulnerabilities using Trivy
-                    for (def service in microservices) {
-                        def trivyReportFile = "trivy-${service}.txt"
-
-                    // Combine vulnerability and severity filters for clarity and flexibility
-                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
-                        if (env.BRANCH_NAME == 'test') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
-                        } else if (env.BRANCH_NAME == 'master') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
-                        } else if (env.BRANCH_NAME == 'dev') {
-                            sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
-                        }
-                        //blocnote
-                    }
-                }
-            }
-        }
-
+}
+	     
 
 	    
 	
