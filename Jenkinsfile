@@ -387,17 +387,17 @@ pipeline {
             }
         }
 	    */
-        stage('Send reports to Slack') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
-                slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
-            }
-        }
+      stage('Send reports to Slack') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        slackUploadFile filePath: '**/trufflehog.txt', initialComment: 'Check TruffleHog Reports!!'
+        slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
     }
 }
+    }
+
 post {
     success {
         // Send notification to Slack on successful build with links to reports
@@ -418,61 +418,30 @@ post {
                   message: "❌ Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
                            "Please review the logs and reports for details.")
     }
-}
-
-
- post {
-        always {
-            script {
-                if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
-                    // Publish Trivy HTML reports
-                    publishHTML(target: [
-                        reportName: 'Trivy Vulnerability Reports',
-                        reportDir: 'trivy-html-reports',
-                        reportFiles: '*.html',
-                        keepAll: true,
-                        alwaysLinkToLastBuild: true,
-                        allowMissing: false
-                    ])
-                }
-            }
-        }
- }
- post {
-        always {
-            // Publish the report in a user-friendly format
-            publishHTML(target: [
-                reportDir: '',
-                reportFiles: 'dependency-check-report.html',
-                reportName: 'Dependency Check Report',
-                keepAll: true
-            ])
-        
-	}}
-	
-post {
-    // Success notification
-    success {
-        script {
-            slackSend channel: '#jenkins_notification', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min!"
-        }
-    }
-    // Failure notification
-    failure {
-        script {
-            slackSend channel: '#jenkins_notification', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed after 13min!"
-        }
-    }
-    // Always run
     always {
         script {
             if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
+                // Archive relevant artifacts
                 archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+                
+                // Publish Trivy HTML reports
+                publishHTML(target: [
+                    reportName: 'Trivy Vulnerability Reports',
+                    reportDir: 'trivy-html-reports',
+                    reportFiles: '*.html',
+                    keepAll: true,
+                    alwaysLinkToLastBuild: true,
+                    allowMissing: false
+                ])
+                
+                // Publish Dependency Check Report
+                publishHTML(target: [
+                    reportDir: '',
+                    reportFiles: 'dependency-check-report.html',
+                    reportName: 'Dependency Check Report',
+                    keepAll: true
+                ])
             }
         }
     }
 }
-
- 
-
-
