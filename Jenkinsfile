@@ -387,62 +387,65 @@ pipeline {
             }
         }
 	    */
-      stage('Send reports to Slack') {
-    when {
-        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-    }
-    steps {
-        slackUploadFile filePath: '**/trufflehog.txt', initialComment: 'Check TruffleHog Reports!!'
-        slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
-    }
-}
-    }
-
-post {
-    success {
-        // Send notification to Slack on successful build with links to reports
-        slackSend(channel: '#jenkins_notification',
-                  message: "✅ Build Successful: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
-                           "Trivy Reports: ${env.BUILD_URL}artifact/trivy-reports/\n" +
-                           "Git Secrets Report: ${env.BUILD_URL}artifact/trufflehog.txt")
-    }
-    unstable {
-        // Notify if the build is marked as unstable
-        slackSend(channel: '#jenkins_notification',
-                  message: "⚠️ Build Unstable: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
-                           "Please review the reports for potential issues.")
-    }
-    failure {
-        // Send notification to Slack on build failure
-        slackSend(channel: '#jenkins_notification',
-                  message: "❌ Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
-                           "Please review the logs and reports for details.")
-    }
-    always {
-        script {
-            if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
-                // Archive relevant artifacts
-                archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
-                
-                // Publish Trivy HTML reports
-                publishHTML(target: [
-                    reportName: 'Trivy Vulnerability Reports',
-                    reportDir: 'trivy-html-reports',
-                    reportFiles: '*.html',
-                    keepAll: true,
-                    alwaysLinkToLastBuild: true,
-                    allowMissing: false
-                ])
-                
-                // Publish Dependency Check Report
-                publishHTML(target: [
-                    reportDir: '',
-                    reportFiles: 'dependency-check-report.html',
-                    reportName: 'Dependency Check Report',
-                    keepAll: true
-                ])
+    stage('Send reports to Slack') {
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                script {
+                    // Upload TruffleHog and Trivy reports to Slack
+                    slackUploadFile filePath: '**/trufflehog.txt', initialComment: 'Check TruffleHog Reports!!'
+                    slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
+                }
             }
         }
     }
-}
+
+    post {
+        success {
+            // Send notification to Slack on successful build with links to reports
+            slackSend(channel: '#jenkins_notification',
+                      message: "✅ Build Successful: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                               "Trivy Reports: ${env.BUILD_URL}artifact/trivy-reports/\n" +
+                               "Git Secrets Report: ${env.BUILD_URL}artifact/trufflehog.txt")
+        }
+        unstable {
+            // Notify if the build is marked as unstable
+            slackSend(channel: '#jenkins_notification',
+                      message: "⚠️ Build Unstable: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                               "Please review the reports for potential issues.")
+        }
+        failure {
+            // Send notification to Slack on build failure
+            slackSend(channel: '#jenkins_notification',
+                      message: "❌ Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
+                               "Please review the logs and reports for details.")
+        }
+        always {
+            script {
+                if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
+                    // Archive relevant artifacts
+                    archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
+
+                    /* Publish Trivy HTML reports
+                    publishHTML(target: [
+                        reportName: 'Trivy Vulnerability Reports',
+                        reportDir: 'trivy-html-reports',
+                        reportFiles: '*.html',
+                        keepAll: true,
+                        alwaysLinkToLastBuild: true,
+                        allowMissing: false
+                    ])
+
+                    // Publish Dependency Check Report
+                    publishHTML(target: [
+                        reportDir: '',
+                        reportFiles: 'dependency-check-report.html',
+                        reportName: 'Dependency Check Report',
+                        keepAll: true
+                    ])*/
+                }
+            }
+        }
+    }
 }
