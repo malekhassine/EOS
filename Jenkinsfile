@@ -443,9 +443,9 @@ pipeline {
                         keepAll: true,
                         alwaysLinkToLastBuild: true,
                         allowMissing: false
-                    ])*/
+                    ])
 
-                    Publish Dependency Check Report
+                    //Publish Dependency Check Report
                     publishHTML(target: [
                         reportDir: '',
                         reportFiles: 'dependency-check-report.html',
