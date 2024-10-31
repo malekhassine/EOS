@@ -387,18 +387,26 @@ pipeline {
             }
         }
 	    */
-    stage('Send reports to Slack') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+   stage('Send reports to Slack') {
+    when {
+        expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        script {
+            // Upload each TruffleHog report individually to avoid Slack's size limitations
+            def truffleHogFiles = findFiles(glob: '**/trufflehog.txt')
+            truffleHogFiles.each { file ->
+                slackUploadFile filePath: file.path, initialComment: "Check TruffleHog Report: ${file.path}"
             }
-            steps {
-                script {
-                    // Upload TruffleHog and Trivy reports to Slack
-                    slackUploadFile filePath: '**/trufflehog.txt', initialComment: 'Check TruffleHog Reports!!'
-                    slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
-                }
+
+            // Similarly, upload each Trivy report individually
+            def trivyFiles = findFiles(glob: '**/trivy-*.txt')
+            trivyFiles.each { file ->
+                slackUploadFile filePath: file.path, initialComment: "Check Trivy Report: ${file.path}"
             }
         }
+    }
+}
     }
 
     post {
@@ -435,15 +443,15 @@ pipeline {
                         keepAll: true,
                         alwaysLinkToLastBuild: true,
                         allowMissing: false
-                    ])
+                    ])*/
 
-                    // Publish Dependency Check Report
+                    Publish Dependency Check Report
                     publishHTML(target: [
                         reportDir: '',
                         reportFiles: 'dependency-check-report.html',
                         reportName: 'Dependency Check Report',
                         keepAll: true
-                    ])*/
+                    ])
                 }
             }
         }
