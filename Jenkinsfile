@@ -394,14 +394,18 @@ stage('Send Trivy Reports to Slack') {
     steps {
         script {
             // Find and upload each Trivy report individually from the trivy-reports directory
-            def trivyFiles = sh(script: 'find ./trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+            def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+            
+            // Ensure files are uploaded correctly
             trivyFiles.each { file ->
-                // Ensure the file path is relative to the workspace
-                slackUploadFile filePath: "${file}", initialComment: "Check Trivy Report: ${file}"
+                // Use the base name for the Slack upload
+                def baseFile = file.replaceFirst(/^trivy-reports\//, '') // Remove the directory prefix
+                slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${baseFile}"
             }
         }
     }
 }
+
 
 
 
