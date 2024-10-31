@@ -443,7 +443,7 @@ pipeline {
                         keepAll: true,
                         alwaysLinkToLastBuild: true,
                         allowMissing: false
-                    ])
+                    ])*/
 
                     //Publish Dependency Check Report
                     publishHTML(target: [
