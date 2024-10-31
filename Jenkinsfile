@@ -392,12 +392,19 @@ stage('Send Reports to Slack') {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
-        script {
+       script {
             // Find and upload each TruffleHog report
             def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
+
+            // Ensure files are uploaded correctly
             truffleHogFiles.each { file ->
-                def baseFile = file.replaceFirst(/^.\//, '') // Remove the leading './'
-                slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${baseFile}"
+                // Check if the file exists before attempting to upload
+                if (file) {
+                    def baseFile = file.replaceFirst(/^\.\//, '') // Remove the leading './'
+                    slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${baseFile}"
+                } else {
+                    echo "No TruffleHog reports found."
+                }
             }
 
             // Find and upload each Trivy report
