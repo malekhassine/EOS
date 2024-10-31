@@ -387,7 +387,7 @@ pipeline {
             }
         }
 	    */
-stage('Send Trivy Reports to Slack') {
+stage('Send Reports to Slack') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -396,11 +396,19 @@ stage('Send Trivy Reports to Slack') {
             // Find and upload each Trivy report individually from the trivy-reports directory
             def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
             
-            // Ensure files are uploaded correctly
+            // Upload each Trivy report
             trivyFiles.each { file ->
-                // Use the base name for the Slack upload
                 def baseFile = file.replaceFirst(/^trivy-reports\//, '') // Remove the directory prefix
                 slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${baseFile}"
+            }
+
+            // Find and upload each TruffleHog report individually from the current workspace
+            def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
+            
+            // Upload each TruffleHog report
+            truffleHogFiles.each { file ->
+                def baseFile = file.replaceFirst(/^\.\//, '') // Remove the leading './' from the path
+                slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${baseFile}"
             }
         }
     }
