@@ -393,32 +393,24 @@ stage('Send Reports to Slack') {
     }
     steps {
         script {
-            // Find and upload each Trivy report individually from the trivy-reports directory
-            def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
-            
-            // Upload each Trivy report
-            trivyFiles.each { file ->
-                def baseFile = file.replaceFirst(/^trivy-reports\//, '') // Remove the directory prefix
-                slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${baseFile}"
+            // Find and upload each TruffleHog report
+            def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
+            truffleHogFiles.each { file ->
+                def baseFile = file.replaceFirst(/^.\//, '') // Remove the leading './'
+                slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${baseFile}"
             }
 
-            // Find and upload each TruffleHog report individually from the current workspace
-            def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
-            
-            // Upload each TruffleHog report
-            truffleHogFiles.each { file ->
-                def baseFile = file.replaceFirst(/^\.\//, '') // Remove the leading './' from the path
-                slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${baseFile}"
+            // Find and upload each Trivy report
+            def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+            trivyFiles.each { file ->
+                def baseFile = file.replaceFirst(/^trivy-reports\//, '') // Remove the directory prefix
+                slackUploadFile filePath: file, initialComment: " ✅ 📢 Check Trivy Report ❗️: ${baseFile}"
             }
         }
     }
 }
 
-
-
-
-
-    }
+}
 
 post {
     success {
