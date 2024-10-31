@@ -403,7 +403,7 @@ stage('Send Trivy Reports to Slack') {
     }
 }
 
-}
+
 
 
     }
