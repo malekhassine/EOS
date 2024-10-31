@@ -394,7 +394,7 @@ stage('Send reports to Slack') {
     steps {
         script {
             // Find and upload each TruffleHog report individually
-            def truffleHogFiles = sh(script: "find $(pwd) -type f -name 'trufflehog.txt'", returnStdout: true).trim().split('\n')
+            def truffleHogFiles = sh(script: 'find $(pwd) -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
             truffleHogFiles.each { file ->
                 if (file) {
                     slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${file}"
@@ -404,7 +404,7 @@ stage('Send reports to Slack') {
             }
 
             // Find and upload each Trivy report individually
-            def trivyFiles = sh(script: "find $(pwd) -type f -name 'trivy-*.txt'", returnStdout: true).trim().split('\n')
+            def trivyFiles = sh(script: 'find $(pwd) -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
             trivyFiles.each { file ->
                 if (file) {
                     slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${file}"
@@ -415,6 +415,7 @@ stage('Send reports to Slack') {
         }
     }
 }
+
 
     }
 
