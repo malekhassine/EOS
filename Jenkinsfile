@@ -387,33 +387,22 @@ pipeline {
             }
         }
 	    */
-stage('Send reports to Slack') {
+stage('Send Trivy Reports to Slack') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
         script {
-            // Find and upload each TruffleHog report individually
-            def truffleHogFiles = sh(script: 'find $(pwd) -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
-            truffleHogFiles.each { file ->
-                if (file) {
-                    slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${file}"
-                } else {
-                    echo "No TruffleHog report found for: ${file}"
-                }
-            }
-
-            // Find and upload each Trivy report individually
-            def trivyFiles = sh(script: 'find $(pwd) -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+            // Find and upload each Trivy report individually from the trivy-reports directory
+            def trivyFiles = sh(script: 'find ./trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
             trivyFiles.each { file ->
-                if (file) {
-                    slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${file}"
-                } else {
-                    echo "No Trivy report found for: ${file}"
-                }
+                // Ensure the file path is relative to the workspace
+                slackUploadFile filePath: "${file}", initialComment: "Check Trivy Report: ${file}"
             }
         }
     }
+}
+
 }
 
 
