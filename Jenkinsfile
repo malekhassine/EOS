@@ -387,26 +387,35 @@ pipeline {
             }
         }
 	    */
- stage('Send reports to Slack') {
+stage('Send reports to Slack') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
     steps {
         script {
             // Find and upload each TruffleHog report individually
-            def truffleHogFiles = sh(script: "find . -type f -name 'trufflehog.txt'", returnStdout: true).trim().split('\n')
+            def truffleHogFiles = sh(script: "find $(pwd) -type f -name 'trufflehog.txt'", returnStdout: true).trim().split('\n')
             truffleHogFiles.each { file ->
-                slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${file}"
+                if (file) {
+                    slackUploadFile filePath: file, initialComment: "Check TruffleHog Report: ${file}"
+                } else {
+                    echo "No TruffleHog report found for: ${file}"
+                }
             }
 
             // Find and upload each Trivy report individually
-            def trivyFiles = sh(script: "find . -type f -name 'trivy-*.txt'", returnStdout: true).trim().split('\n')
+            def trivyFiles = sh(script: "find $(pwd) -type f -name 'trivy-*.txt'", returnStdout: true).trim().split('\n')
             trivyFiles.each { file ->
-                slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${file}"
+                if (file) {
+                    slackUploadFile filePath: file, initialComment: "Check Trivy Report: ${file}"
+                } else {
+                    echo "No Trivy report found for: ${file}"
+                }
             }
         }
     }
 }
+
     }
 
 post {
