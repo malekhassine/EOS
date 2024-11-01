@@ -450,7 +450,7 @@ post {
                 sh 'find . -type f -size 0 -delete'
                 
                 // Archive non-empty relevant artifacts
-                archiveArtifacts artifacts: '**/trufflehog.txt, **/trivy-*.txt, **/reports/*.html, dependency-check-report.html', 
+                archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, dependency-check-report.html', 
                                  allowEmptyArchive: true
 
                 // Optionally publish Trivy HTML reports
