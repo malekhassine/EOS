@@ -405,7 +405,7 @@ stage('Send Reports to Slack') {
                     echo "No valid TruffleHog reports found for upload."
                 }
             }
-        }
+        
     
 
             // Find and upload each Trivy report
@@ -476,6 +476,7 @@ post {
             }
         }
     }
+}
 }
 
 
