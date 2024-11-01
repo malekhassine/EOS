@@ -51,7 +51,7 @@ pipeline {
                             // Run TruffleHog to check for secrets in the repository
                             sh 'docker run --rm gesellix/trufflehog --json https://github.com/malekhassine/EOS.git > trufflehog.txt'
                             sh 'cat trufflehog.txt' // Output the results
-			  archiveArtifacts artifacts: 'trufflehog.txt', allowEmptyArchive: true
+			  //archiveArtifacts artifacts: 'trufflehog.txt', allowEmptyArchive: true
                         }
                     }
                 }
@@ -266,7 +266,7 @@ pipeline {
                         ${imageTag} > ${trivyReportFile}
                     """
                     // Archive Trivy JSON reports
-                    archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
+                   // archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
                 } catch (Exception e) {
                     // Handle errors during scanning
                     echo "Error scanning ${imageTag}: ${e.message}"
