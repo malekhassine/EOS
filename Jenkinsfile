@@ -89,7 +89,7 @@ pipeline {
          }}
 	    }*/
 	   
-	     stage('Build front ecomm-ui') { 
+	   /*  stage('Build front ecomm-ui') { 
              when { 
                  expression { 
                     expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -108,7 +108,7 @@ pipeline {
              } 
          }
 	    }
-	    }
+	    }*/
 	    
     stage('Unit Test') {
             when {
