@@ -421,31 +421,39 @@ stage('Send Reports to Slack') {
 
 post {
     success {
-        // Send notification to Slack on successful build with links to reports
+        // Notify Slack of successful build with report links
         slackSend(channel: '#jenkins_notification',
                   message: "✅ Build Successful: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
                            "Trivy Reports: ${env.BUILD_URL}artifact/trivy-reports/\n" +
                            "Git Secrets Report: ${env.BUILD_URL}artifact/trufflehog.txt")
     }
+    
     unstable {
-        // Notify if the build is marked as unstable
+        // Notify Slack if the build is marked as unstable
         slackSend(channel: '#jenkins_notification',
                   message: "⚠️ Build Unstable: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
                            "Please review the reports for potential issues.")
     }
+    
     failure {
-        // Send notification to Slack on build failure
+        // Notify Slack of build failure with guidance to review logs and reports
         slackSend(channel: '#jenkins_notification',
                   message: "❌ Build Failed: ${env.JOB_NAME} [${env.BUILD_NUMBER}]\n" +
                            "Please review the logs and reports for details.")
     }
+    
     always {
         script {
+            // Cleanup and archive artifacts only on dev, test, or master branches
             if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
-                // Archive relevant artifacts
-                archiveArtifacts artifacts: '**/trufflehog.txt, **/trivy-*.txt, **/reports/*.html, dependency-check-report.html', allowEmptyArchive: true
+                // Remove empty files
+                sh 'find . -type f -size 0 -delete'
+                
+                // Archive non-empty relevant artifacts
+                archiveArtifacts artifacts: '**/trufflehog.txt, **/trivy-*.txt, **/reports/*.html, dependency-check-report.html', 
+                                 allowEmptyArchive: true
 
-                // Publish Trivy HTML reports (uncomment if needed)
+                // Optionally publish Trivy HTML reports
                 /*
                 publishHTML(target: [
                     reportName: 'Trivy Vulnerability Reports',
@@ -468,5 +476,6 @@ post {
         }
     }
 }
+
 
 }
