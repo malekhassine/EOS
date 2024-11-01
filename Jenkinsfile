@@ -266,7 +266,7 @@ pipeline {
                         ${imageTag} > ${trivyReportFile}
                     """
                     // Archive Trivy JSON reports
-                   // archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
+                    archiveArtifacts artifacts: "${trivyReportFile}", allowEmptyArchive: true
                 } catch (Exception e) {
                     // Handle errors during scanning
                     echo "Error scanning ${imageTag}: ${e.message}"
