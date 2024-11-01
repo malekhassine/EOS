@@ -391,33 +391,35 @@ stage('Send Reports to Slack') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
-     steps {
+    steps {
         script {
             // Find and upload each TruffleHog report
             def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
 
             truffleHogFiles.each { file ->
-                if (file && file != "null") { // Check for valid file paths
-                    def fullPath = "${env.WORKSPACE}/${file.replaceFirst(/^\.\//, '')}" // Get the absolute path
+                if (file && file != "null") { 
+                    def fullPath = "${env.WORKSPACE}/${file.replaceFirst(/^\.\//, '')}" 
                     echo "Uploading TruffleHog report: ${fullPath}"
                     slackUploadFile filePath: fullPath, initialComment: "Check TruffleHog Report: ${file}"
                 } else {
                     echo "No valid TruffleHog reports found for upload."
                 }
             }
-        
-    
 
             // Find and upload each Trivy report
             def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
             trivyFiles.each { file ->
-                def baseFile = file.replaceFirst(/^trivy-reports\//, '') // Remove the directory prefix
-                slackUploadFile filePath: file, initialComment: " ✅ 📢 Check Trivy Report ❗️: ${baseFile}"
+                if (file && file != "null") {
+                    def fullPath = "${env.WORKSPACE}/${file.replaceFirst(/^trivy-reports\//, '')}"
+                    echo "Uploading Trivy report: ${fullPath}"
+                    slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${file}"
+                } else {
+                    echo "No valid Trivy reports found for upload."
+                }
             }
         }
     }
 }
-
 }
 
 post {
