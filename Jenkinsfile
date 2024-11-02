@@ -397,22 +397,22 @@ stage('Send Reports to Slack') {
             def truffleHogFiles = sh(script: 'find . -type f -name "trufflehog.txt"', returnStdout: true).trim().split('\n')
 
             // Ensure files are uploaded correctly
-            truffleHogFiles.each { file ->
-                if (file) {
+            truffleHogFiles.each {  truffleFile ->
+                if (truffleFile) {
                     // Make the file path relative to the workspace
-                    def relativePath = file.replaceFirst("^\\./", "")
-                    echo "Uploading TruffleHog report: ${file}"
+                    def relativePath = truffleFile.replaceFirst("^\\./", "")
+                    echo "Uploading TruffleHog report: ${relativePath}"
                     
                     slackUploadFile filePath: relativePath, initialComment: "Check TruffleHog Report: ${relativePath}"
                 } else {
                     echo "No TruffleHog reports found."
                 }
-
+            }
 
             // Find and upload each Trivy report
             def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
-            trivyFiles.each { file ->
-                if (file && file != "null") {
+            trivyFiles.each { trivyfile ->
+                if (trivyfile && file != "null") {
                     def fullPath = "${env.WORKSPACE}/${file.replaceFirst(/^trivy-reports\//, '')}"
                     echo "Uploading Trivy report: ${fullPath}"
                     slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${file}"
