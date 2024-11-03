@@ -231,7 +231,7 @@ pipeline {
     }
 }*/
 
-	/*    stage('Trivy Image Scan') {
+	   stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -276,7 +276,7 @@ pipeline {
         }
     }
 }
-	 */  
+	  
 
 	    
 	
