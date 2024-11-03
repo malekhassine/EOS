@@ -79,7 +79,7 @@ pipeline {
                 }
             }
         }
-	/* stage('Install Npm') { 
+	 stage('Install Npm') { 
             steps {
                 script {
 		      for (def service in frontendservice) {
@@ -87,9 +87,9 @@ pipeline {
                   sh 'npm install --legacy-peer-deps' }
              } 
          }}
-	    }*/
+	    }
 	   
-	   /*  stage('Build front ecomm-ui') { 
+	    stage('Build front ecomm-ui') { 
              when { 
                  expression { 
                     expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -108,7 +108,7 @@ pipeline {
              } 
          }
 	    }
-	    }*/
+	    }
 	    
     stage('Unit Test') {
             when {
@@ -186,7 +186,7 @@ pipeline {
             }
         } 
 
-	  /* stage('Trivy Image Scan') {
+	/*CHEKKA  stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -230,7 +230,7 @@ pipeline {
         }
     }
 }*/
-/*
+
 	    stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -276,12 +276,12 @@ pipeline {
         }
     }
 }
-	*/     
+	   
 
 	    
 	
     
-/*
+
         stage('Docker Push') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -386,7 +386,7 @@ pipeline {
                 }
             }
         }
-	    */
+	    
 stage('Send Reports to Slack') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
