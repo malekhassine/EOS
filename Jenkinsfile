@@ -436,16 +436,16 @@ stage('Send Reports to Slack') {
             }
 
             // Find and upload each Trivy report
-            def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
-            trivyFiles.each { trivyfile ->
-                if (trivyfile && file != "null") {
-                    def fullPath = "${env.WORKSPACE}/${file.replaceFirst(/^trivy-reports\//, '')}"
-                    echo "Uploading Trivy report: ${fullPath}"
-                    slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${file}"
-                } else {
-                    echo "No valid Trivy reports found for upload."
-                }
-            }
+		def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+		trivyFiles.each { trivyfile ->
+		    if (trivyfile && trivyfile != "null") {
+		        def fullPath = "${env.WORKSPACE}/${trivyfile.replaceFirst(/^trivy-reports\//, '')}"
+		        echo "Uploading Trivy report: ${fullPath}"
+		        slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${trivyfile}"
+		    } else {
+		        echo "No valid Trivy reports found for upload."
+		    }
+		}
         }
     }
 }
