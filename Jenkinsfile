@@ -231,7 +231,7 @@ pipeline {
     }
 }*/
 
-	    stage('Trivy Image Scan') {
+	/*    stage('Trivy Image Scan') {
     when {
         expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -276,7 +276,7 @@ pipeline {
         }
     }
 }
-	   
+	 */  
 
 	    
 	
@@ -306,7 +306,7 @@ pipeline {
 	} 
 	    
 
-	stage('Kube-bench Scan') {
+	/*stage('Kube-bench Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -317,7 +317,29 @@ pipeline {
                     sh "ssh $REMOTE_USER@$REMOTE_HOST  'cat ~/kubebench_CIS_${env.BRANCH_NAME}.txt' "
                 }
             }
+        }*/
+
+	    stage('Kube-bench Scan') {
+    when {
+        expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+    }
+    steps {
+        sshagent(credentials: [env.SSH_CREDENTIALS_ID]) {
+            sh """
+                ssh $REMOTE_USER@$REMOTE_HOST '
+                    cd ~ &&
+                    if [ ! -f kube-bench ]; then
+                        tar -xzvf kube-bench_0.6.9_linux_amd64.tar.gz
+                    fi &&
+                    chmod +x kube-bench &&
+                    ./kube-bench --config-dir cfg --config cfg/config.yaml > kubebench_CIS_${env.BRANCH_NAME}.txt
+                '
+            """
+            sh "ssh $REMOTE_USER@$REMOTE_HOST 'cat ~/kubebench_CIS_${env.BRANCH_NAME}.txt'"
         }
+    }
+}
+
 
 	    stage('Kubescape Scan') {
             when {
