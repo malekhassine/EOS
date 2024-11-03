@@ -329,7 +329,8 @@ stage('Kube-bench Scan') {
                 ssh $REMOTE_USER@$REMOTE_HOST '
                     cd ~ &&
                     if [ ! -f kube-bench ]; then
-                        tar -xzvf kube-bench_0.6.9_linux_amd64.tar.gz
+                        rm -rf kube-bench || true  # Remove any existing directory, ignore errors
+                        tar -xzvf kube-bench_0.6.9_linux_amd64.tar.gz || true  # Ignore error if tar fails
                     else
                         echo "kube-bench already exists, skipping extraction"
                     fi &&
