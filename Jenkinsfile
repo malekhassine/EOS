@@ -434,18 +434,19 @@ stage('Send Reports to Slack') {
                     echo "No TruffleHog reports found."
                 }
             }
-
-            // Find and upload each Trivy report
-		def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
-		trivyFiles.each { trivyfile ->
-		    if (trivyfile && trivyfile != "null") {
-		        def fullPath = "${env.WORKSPACE}/${trivyfile.replaceFirst(/^trivy-reports\//, '')}"
+		
+		            // Find and upload each Trivy report
+	    def trivyFiles = sh(script: 'find trivy-reports -type f -name "trivy-*.txt"', returnStdout: true).trim().split('\n')
+		    trivyFiles.each { trivyFile ->
+		    if (trivyFile && trivyFile != "null") {
+		        def fullPath = "${env.WORKSPACE}/${trivyFile}"
 		        echo "Uploading Trivy report: ${fullPath}"
-		        slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${trivyfile}"
+		        slackUploadFile filePath: fullPath, initialComment: "✅ 📢 Check Trivy Report ❗️: ${trivyFile}"
 		    } else {
 		        echo "No valid Trivy reports found for upload."
 		    }
 		}
+
         }
     }
 }
