@@ -319,7 +319,7 @@ pipeline {
             }
         }*/
 
-	    stage('Kube-bench Scan') {
+stage('Kube-bench Scan') {
     when {
         expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
     }
@@ -330,6 +330,8 @@ pipeline {
                     cd ~ &&
                     if [ ! -f kube-bench ]; then
                         tar -xzvf kube-bench_0.6.9_linux_amd64.tar.gz
+                    else
+                        echo "kube-bench already exists, skipping extraction"
                     fi &&
                     chmod +x kube-bench &&
                     ./kube-bench --config-dir cfg --config cfg/config.yaml > kubebench_CIS_${env.BRANCH_NAME}.txt
@@ -339,6 +341,7 @@ pipeline {
         }
     }
 }
+
 
 
 	    stage('Kubescape Scan') {
