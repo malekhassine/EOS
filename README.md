@@ -81,8 +81,6 @@ ws://localhost:8091/ws/events
 
 - Spring cloud gateway
 
-- Docker (docker-compose)
-
 - React
 
 ## ER Diagram
