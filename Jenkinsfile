@@ -1,27 +1,41 @@
+def microservices = ['ecomm-cart','ecomm-order','ecomm-product','ecomm-web']
+def frontendservice = ['ecomm-ui']  //front
+def services = microservices + frontendservice
+def deployenv = ''
+if (env.BRANCH_NAME == 'test') {
+    deployenv = 'test'
+} else if (env.BRANCH_NAME == 'master') {
+    deployenv = 'prod'
+}
 
-def microservices = ['ecomm-cart']
+def COLOR_MAP = [
+	'FAILURE' : 'danger',
+	'SUCCESS' : 'good'
+]
 
 pipeline {
     agent any
+    tools {
+    maven 'maven'
+    
+}
+
 
     environment {
         DOCKERHUB_USERNAME = "malekhassine"
         // Ensure Docker credentials are stored securely in Jenkins
+	MASTER_NODE = 'https://192.168.63.133:6443'
+        KUBE_CREDENTIALS_ID = 'tokenmaster'
     }
 
-    stages {
-        stage('Checkout') {
+    stages{
+        stage('Git checkout Stage') {
             steps {
-                // Checkout the repository from GitHub
-                checkout([
-                    $class: 'GitSCM',
-                    branches: [[name: env.BRANCH_NAME]], // Checkout the current branch
-                    userRemoteConfigs: [[url: 'https://github.com/malekhassine/EOS.git']]
-                ])
+                git changelog: false, poll: false, url: 'https://github.com/malekhassine/EOS.git'
             }
         }
 
-        stage('Check Git Secrets') {
+      /*  stage('Check Git Secrets') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -38,7 +52,7 @@ pipeline {
                 }
             }
         }
-
+*/
       
 
         stage('Build') {
@@ -72,25 +86,29 @@ pipeline {
                 }
             }
         }
+/* stage('SonarQube Analysis and dependency check') {
+               when {
+                              expression {
+                                  (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')
+                              }
+                          }
+          steps {
+            script {
+               // Run unit tests for each microservice using Maven
+                  for (def service in microservices) {
+                     dir(service) {
+                         withSonarQubeEnv('sonarqube') {
+                            sh 'mvn sonar:sonar'
 
-        stage('SonarQube Analysis') {
-            when {
-                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
-            }
-            steps {
-                script {
-                    // Perform static analysis with SonarQube for each microservice
-                    for (def service in microservices) {
-                        dir(service) {
-                            withSonarQubeEnv(credentialsId: 'sonarqube-id') {
-                                sh 'mvn sonar:sonar'
-                            }
-                        }
-                    }
-                }
-            }
-        }
+                          }
+                           dependencyCheck additionalArguments: '--format HTML', odcInstallation: 'dependency-Check'
+             }
+           }
+          }
+         }
+        }*/
 
+         
         stage('Docker Login') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
@@ -115,19 +133,27 @@ pipeline {
                     for (def service in microservices) {
                         dir(service) {
                             if (env.BRANCH_NAME == 'test') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_test:latest ."
                             } else if (env.BRANCH_NAME == 'master') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_prod:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_prod:latest ."
                             } else if (env.BRANCH_NAME == 'dev') {
-                                sh "docker build -t ${DOCKERHUB_USERNAME}/${service}_dev:latest ."
+                                sh "docker build  --progress=plain -t ${DOCKERHUB_USERNAME}/${service}_dev:latest ."
                             }
                         }
                     }
                 }
             }
         }
+	/*    stage('Update Trivy Database') {
+            steps {
+                script {
+                    // Update the Trivy database
+                    sh 'docker run --rm -v $PWD:/tmp/.cache/ aquasec/trivy image --download-db-only'
+                }
+            }
+        }
 
-        stage('Trivy Image Scan') {
+  stage('Trivy Image Scan') {
             when {
                 expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
             }
@@ -136,17 +162,22 @@ pipeline {
                     // Scan each Docker image for vulnerabilities using Trivy
                     for (def service in microservices) {
                         def trivyReportFile = "trivy-${service}.txt"
-                        if (env.BRANCH_NAME == 'test') {
+
+                    // Combine vulnerability and severity filters for clarity and flexibility
+                        def trivyScanArgs = "--scanners vuln --severiCRITICAL,HIGH,MEDIUM--timeout 30m"
+ if (env.BRANCH_NAME == 'test') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_test:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'master') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_prod:latest > ${trivyReportFile}"
                         } else if (env.BRANCH_NAME == 'dev') {
                             sh "docker run --rm -v /var/run/docker.sock:/var/run/docker.sock -v $PWD:/tmp/.cache/ aquasec/trivy image --scanners vuln --timeout 30m ${DOCKERHUB_USERNAME}/${service}_dev:latest > ${trivyReportFile}"
                         }
+                        //blocnote
                     }
                 }
             }
         }
+*/
 
         stage('Docker Push') {
             when {
@@ -168,7 +199,67 @@ pipeline {
                         }
                     }
                 }
+	    }
+	}
+	 /*   stage('Deploy to Kubernetes') {
+            when {
+                expression { (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                withCredentials([string(credentialsId: env.KUBE_CREDENTIALS_ID, variable: 'KUBE_TOKEN')]) {
+
+                script {
+	           
+                     if (env.BRANCH_NAME == 'test') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                        sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml" }
+
+                   else if (env.BRANCH_NAME == 'master') {
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f cart.yml"
+                            sh "kubectl --token=$KUBE_TOKEN --server=$MASTER_NODE apply -f namespace.yml"                       
+ 			}
+                }
+            }
+        }
+    }*/
+	    stage('Send reports to Slack') {
+            when {
+                expression { (env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master') }
+            }
+            steps {
+                slackUploadFile filePath: '**/trufflehog.txt',  initialComment: 'Check TruffleHog Reports!!'
+                slackUploadFile filePath: '**/reports/*.html', initialComment: 'Check ODC Reports!!'
+                slackUploadFile filePath: '**/trivy-*.txt', initialComment: 'Check Trivy Reports!!'
+            }
+        }
+    }
+	
+post {
+    // Success notification
+    success {
+        script {
+            slackSend channel: '#dev', color: 'good', message: "Pipeline '${env.JOB_NAME}' Build Successful after 13min!"
+        }
+    }
+    // Failure notification
+    failure {
+        script {
+            slackSend channel: '#dev', color: 'danger', message: "Pipeline '${env.JOB_NAME}' build failed after 13min!"
+        }
+    }
+    // Always run
+    always {
+        script {
+            if ((env.BRANCH_NAME == 'dev') || (env.BRANCH_NAME == 'test') || (env.BRANCH_NAME == 'master')) {
+                archiveArtifacts artifacts: '**/trufflehog.txt, **/reports/*.html, **/trivy-*.txt'
             }
         }
     }
 }
+
+
+
+        }
+    
+
+
